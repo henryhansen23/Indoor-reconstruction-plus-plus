@@ -13,6 +13,7 @@ Compile by running $ sh compile.sh
 
 ## Information:
 ### *interpolation_data_collection*:<a name="interpolate"></a>
+#### *build*:<a name="interpolate"></a>
 
 This script is built upon [UnaNancyOwen's simple program](https://github.com/UnaNancyOwen/VelodyneCapture/tree/master/sample/simple) and uses his VelodyneCapture class. It retrieves data from the VLP-16 in forms of *datapackets*, which is approximately *2.38&deg;* of a full *360&deg;* scan at *300 RPM*. One datapacket contains data from *24* firing sequences of the 16 lasers, which results in a maximum of *384* points per packet. 
 
