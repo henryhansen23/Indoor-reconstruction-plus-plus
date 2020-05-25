@@ -187,14 +187,14 @@ void incremental_pairwise_registration(const std::vector <pcl::PointCloud <pcl::
 
          reg.normals_estimation(target); 
 
-         reg.covariance_sampling(target, target_sampled);
+         reg.normal_space_sampling(target, target_sampled);
 
 
          // Prepare source cloud for alignment 
 
          reg.normals_estimation(source); 
 
-         reg.covariance_sampling(source, source_sampled); 
+         reg.normal_space_sampling(source, source_sampled); 
 
 
          reg.alignment_gicp(target_sampled, source_sampled, transformation_matrix);
