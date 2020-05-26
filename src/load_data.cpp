@@ -17,9 +17,6 @@
 #endif
  
 
-#include "data_types.h"
-
-
 #include <boost/filesystem.hpp>
 
 using namespace boost::filesystem;
@@ -180,7 +177,7 @@ std::vector <std::vector <pcl::PointCloud <pcl::PointXYZ> > > load_datapackets(c
 std::vector <Quaternion_file> read_quaternions_file(const std::string path) {
 
                 
-                              std::vector <Quaternion_file> quaternions;     
+                              std::vector <std::pair <Eigen::Vector4d, double> > quaternions;     
         
  
                               std::ifstream input(path + "/" + "quaternions_datapacket.csv");
@@ -229,7 +226,7 @@ std::vector <Quaternion_file> read_quaternions_file(const std::string path) {
 
                                     double time = row[4]; 
 
-                                    quaternions.push_back({quat, time});
+                                    quaternions.push_back(std::make_pair(quat, time));
 
         
                                 }
