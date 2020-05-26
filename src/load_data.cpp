@@ -25,8 +25,8 @@ using namespace boost::filesystem;
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 
-int number_of(const std::string data_path, const int pos_start_number, const std::string sep) {
-
+int number_of_scans(const std::string data_path) {
+	
 
     int number = 0;
 	
@@ -40,8 +40,46 @@ int number_of(const std::string data_path, const int pos_start_number, const std
 
         if (file == ".DS_Store") {continue;} // If Apple
   
+	    
+	int new_number = std::stoi(file.substr(pos_start_number, file.find("_", pos_start_number) - pos_start_number)); 
 
-        int new_number = std::stoi(file.substr(pos_start_number, file.find(sep, pos_start_number) - pos_start_number)); 
+
+        if (new_number > number) {
+
+           number = new_number; 
+
+        }
+
+                                
+    }
+
+ 
+    return number; 
+   
+
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+int number_of_directories(const std::string data_path) {
+	
+
+    int number = 0;
+	
+      
+    path p(data_path); 
+
+    for (auto i = directory_iterator(p); i != directory_iterator(); ++i) {
+
+
+        std::string file = i -> path().filename().string(); 
+
+        if (file == ".DS_Store") {continue;} // If Apple
+  
+        
+        int new_number = std::stoi(file.substr(file.find("_") + 1, file.length()); 
 
 
         if (new_number > number) {
@@ -145,10 +183,8 @@ std::vector <std::vector <pcl::PointCloud <pcl::PointXYZ> > > load_datapackets(c
 
                                                               std::vector <pcl::PointCloud <pcl::PointXYZ> > datapackets_scan_clouds; 
 	
-	
-	                                                      int pos_scan_number = 5;
 
-                                                              int n_scans = number_of(path, pos_scan_number, "_"); 
+                                                              int n_scans = number_of_scans(path); 
 
 
                                                               for (int i = 0; i <= n_scans; ++i) {
