@@ -3,7 +3,11 @@
 #include <vector> 
 
 
-#include <Eigen/dense>
+#if defined __GNUC__ || defined __APPLE__
+#include <Eigen/Dense>
+#else
+#include <eigen3/Eigen/Dense>
+#endif
 
 
 #include "data_types.h"
@@ -15,20 +19,19 @@
 std::vector <Quaternion_file> interpolate_quaternions(const std::vector <Quaternion_file> & quaternions) {
 
 
+  
+                              std::vector <Quaternion_file> interpolated_quaternions; 
+  
+  
+                              std::vector <Eigen::Vector4d> equal_quaternions; 
+  
+                              std::vector <double> timestamp; 
+  
                               Eigen::Vector4d previous_quaternion {1000, 1000, 1000, 1000};  // initialization of variable
 
-
-                              double diff_time, previous_time = 0;
-
                               Eigen::Vector4d a, b, q, diff_quat; 
-
-
-                              std::vector <Quaternion_file> interpolated_quaternions; 
-
-
-                              std::vector <Eigen::Vector4d> equal_quaternions; 
-
-                              std::vector <double> timestamp; 
+  
+                              double diff_time, previous_time = 0;
 
 
                               for (std::size_t i = 0; i < quaternions.size(); ++i) {
