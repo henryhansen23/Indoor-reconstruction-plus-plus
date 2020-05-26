@@ -50,10 +50,8 @@ int main(int argc, char** argv) {
   
     std::cout << std::endl << "Fragments" << std::endl << std::endl; 
 
-  
-    int pos_fragment_number = 9;
 
-    int fragments = number_of(data_dir + "/fragments", pos_fragment_number, " "); 
+    int fragments = number_of_directories(data_dir + "/fragments"); 
 
 
     for (int i = 0; i <= fragments; ++i) {
@@ -99,10 +97,8 @@ int main(int argc, char** argv) {
 
        std::cout << "Odometry" << std::endl << std::endl; 
 
-
-       int pos_odometry_number = 9;
-
-       int odometries = number_of(data_dir + "/odometry", pos_odometry_number, " "); 
+        
+       int odometries = number_of_directories(data_dir + "/odometry"); 
 
 
        std::vector <Eigen::Vector3f> translations; 
