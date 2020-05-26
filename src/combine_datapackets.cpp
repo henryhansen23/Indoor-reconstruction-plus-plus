@@ -14,11 +14,6 @@
 #include <pcl/visualization/pcl_visualizer.h>
 
 
-#include <boost/filesystem.hpp>
-
-
-#include "data_types.h"
-
 #include "transformation.h"
 
 
