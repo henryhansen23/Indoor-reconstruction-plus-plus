@@ -10,7 +10,11 @@
 #include <pcl/io/pcd_io.h>
 
 
-#include <Eigen/dense>
+#if defined __GNUC__ || defined __APPLE__
+#include <Eigen/Dense>
+#else
+#include <eigen3/Eigen/Dense>
+#endif
  
 
 #include "data_types.h"
@@ -26,13 +30,11 @@ using namespace boost::filesystem;
 
 int number_of_scans(const std::string data_path) {
 
+	
+    constexpr int pos_number = 5; 
 
-    int number = 0, new_number; 
-
-    const int pos_number = 5; 
-
-    std::string scan_number;
-
+    int number = 0;
+	
       
     path p(data_path); 
 
@@ -44,9 +46,9 @@ int number_of_scans(const std::string data_path) {
         if (file == ".DS_Store") {continue;} // If Apple
   
   
-        scan_number = file.substr(pos_number, file.find("_", pos_number) - pos_number);     
+        std::string scan_number = file.substr(pos_number, file.find("_", pos_number) - pos_number);     
 
-        new_number = std::stoi(scan_number); 
+        int new_number = std::stoi(scan_number); 
 
 
         if (new_number > number) {
@@ -125,13 +127,11 @@ std::vector <pcl::PointCloud <pcl::PointXYZ> > load_fragments(const std::string 
 std::vector <pcl::PointCloud <pcl::PointXYZ> > load_datapackets_in_one_scan(const int scan_number, const std::string datapackets_path) {
 
 	
+	                                       constexpr int pos_number = 5;
+	
 	                                       path p(datapackets_path); 
 
                                                std::vector <pcl::PointCloud <pcl::PointXYZ> > clouds; 
-
-                                               const int pos_number = 5;
-
-                                               std::string file_number;  
 
 
                                                for (auto i = directory_iterator(p); i != directory_iterator(); ++i) {
@@ -142,7 +142,7 @@ std::vector <pcl::PointCloud <pcl::PointXYZ> > load_datapackets_in_one_scan(cons
                                                    if (file == ".DS_Store") {continue;} // If Apple
 
 
-                                                   file_number = file.substr(pos_number, file.find("_", pos_number) - pos_number); 
+                                                   std::string file_number = file.substr(pos_number, file.find("_", pos_number) - pos_number); 
    
 
                                                    if (scan_number == std::stoi(file_number)) {
@@ -204,18 +204,14 @@ std::vector <std::vector <pcl::PointCloud <pcl::PointXYZ> > > load_datapackets(c
 std::vector <Quaternion_file> read_quaternions_file(const std::string path) {
 
                 
-                              std::vector <Quaternion_file> quaternions;
-
-                              Eigen::Vector4d quat;
-
-                              double time;               
+                              std::vector <Quaternion_file> quaternions;     
         
  
                               std::ifstream input(path + "/" + "quaternions_datapacket.csv");
+	
+	                      const std::string delimiter = ",";
 
                               std::string line;
-
-                              const std::string delimiter = ",";
 
 
                               // Read line 
@@ -227,8 +223,6 @@ std::vector <Quaternion_file> read_quaternions_file(const std::string path) {
           
 	                            int pos = 0;
 
-	                            double number;
-
                                     std::vector <double> row;
  
 
@@ -237,7 +231,7 @@ std::vector <Quaternion_file> read_quaternions_file(const std::string path) {
     	                            while ((pos = line.find(delimiter)) != std::string::npos)  {
 
     
-		                          number = std::stod(line.substr(0, pos));
+		                          double number = std::stod(line.substr(0, pos));
 
                                           row.push_back(number);
 
@@ -247,7 +241,9 @@ std::vector <Quaternion_file> read_quaternions_file(const std::string path) {
                                     }
 
 
-                                    // Store row      
+                                    // Store row  
+				      
+				    Eigen::Vector4d quat;     
 
                                     for (int j = 0; j < 4; ++j) {
 
@@ -255,7 +251,7 @@ std::vector <Quaternion_file> read_quaternions_file(const std::string path) {
 
                                     }
 
-                                    time = row[4]; 
+                                    double time = row[4]; 
 
                                     quaternions.push_back({quat, time});
 
