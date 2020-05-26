@@ -28,6 +28,9 @@ using namespace boost::filesystem;
 int number_of_scans(const std::string data_path) {
 	
 
+    constexpr int pos_start_number = 5; 
+	
+	
     int number = 0;
 	
       
