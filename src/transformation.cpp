@@ -3,7 +3,11 @@
 #include <vector> 
 
 
-#include <Eigen/dense>
+#if defined __GNUC__ || defined __APPLE__
+#include <Eigen/Dense>
+#else
+#include <eigen3/Eigen/Dense>
+#endif
 
 
 #include "data_types.h"
@@ -56,7 +60,7 @@ std::vector <Eigen::Matrix4d> make_transformation_matrices(const std::vector <Qu
 
 
 
-                              for (std::size_t i = 0; i < quaternions.size(); i++) {
+                              for (std::size_t i = 0; i < quaternions.size(); ++i) {
 
 
                                   make_rotation_matrix(quaternions[i].quat, tripod_rotation); 
