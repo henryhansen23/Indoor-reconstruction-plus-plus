@@ -13,11 +13,11 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-std::vector <Quaternion_file> interpolate_quaternions(const std::vector <Quaternion_file> & quaternions) {
+std::vector <std::pair <Eigen::Vector4d, double> > interpolate_quaternions(const std::vector <std::pair <Eigen::Vector4d, double> > & quaternions) {
 
 
   
-                              std::vector <Quaternion_file> interpolated_quaternions; 
+                              std::vector <std::pair <Eigen::Vector4d, double> > interpolated_quaternions; 
   
   
                               std::vector <Eigen::Vector4d> equal_quaternions; 
@@ -95,13 +95,13 @@ std::vector <Quaternion_file> interpolate_quaternions(const std::vector <Quatern
                                                    a(2) * timestamp[j] + b(2), 
                                                    a(3) * timestamp[j] + b(3); 
 
-                                              interpolated_quaternions.push_back({q, timestamp[j]});
+                                              interpolated_quaternions.push_back(std::make_pair(q, timestamp[j]));
 
 
                                           }
 
 
-                                          interpolated_quaternions.push_back({quaternions[i].quat, quaternions[i].time});
+                                          interpolated_quaternions.push_back(std::make_pair(quaternions[i].quat, quaternions[i].time));
 
 
                                           equal_quaternions.clear(); 
@@ -119,7 +119,7 @@ std::vector <Quaternion_file> interpolate_quaternions(const std::vector <Quatern
                                        else {
 
 
-                                            interpolated_quaternions.push_back({quaternions[i].quat, quaternions[i].time});
+                                            interpolated_quaternions.push_back(std::make_pair(quaternions[i].quat, quaternions[i].time));
 
                                             previous_quaternion = quaternions[i].quat;
 
@@ -142,7 +142,7 @@ std::vector <Quaternion_file> interpolate_quaternions(const std::vector <Quatern
 
                                  for (std::size_t i = 0; i < equal_quaternions.size(); ++i) {
   
-                                     interpolated_quaternions.push_back({equal_quaternions[i], timestamp[i]});
+                                     interpolated_quaternions.push_back(std::make_pair(equal_quaternions[i], timestamp[i]));
 
                                  }
 
