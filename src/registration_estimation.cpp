@@ -66,9 +66,7 @@ void translation_estimation(const std::string data_path, Eigen::Vector3f & trans
      // Align all other point clouds pairwise
 
 
-     int pos_scan_number = 5;
-
-     int scans = number_of(data_path, pos_scan_number, " "); 
+     int scans = number_of_scans(data_path); 
 
 
      for (int i = 1; i <= scans; ++i) {
