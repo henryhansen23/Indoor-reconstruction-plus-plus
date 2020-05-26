@@ -82,7 +82,7 @@ int number_of_directories(const std::string data_path) {
         if (file == ".DS_Store") {continue;} // If Apple
   
         
-        int new_number = std::stoi(file.substr(file.find("_") + 1, file.length()); 
+        int new_number = std::stoi(file.substr(file.find("_") + 1, file.length())); 
 
 
         if (new_number > number) {
