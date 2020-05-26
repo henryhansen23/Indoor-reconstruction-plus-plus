@@ -8,7 +8,11 @@
 #include <vector>
 
 
-#include <Eigen/dense>
+#if defined __GNUC__ || defined __APPLE__
+#include <Eigen/Dense>
+#else
+#include <eigen3/Eigen/Dense>
+#endif
 
 
 #include <pcl/point_cloud.h>
