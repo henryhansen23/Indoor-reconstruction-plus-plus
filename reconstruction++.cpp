@@ -1,7 +1,5 @@
 
 
-#include <algorithm>
-
 #include <iostream>
 
 #include <string> 
@@ -9,13 +7,7 @@
 #include <vector> 
 
 
-#include <pcl/point_types.h>
-
 #include <pcl/point_cloud.h>
-
-#include <pcl/io/pcd_io.h>
-
-#include <pcl/console/parse.h>
 
 
 #if defined __GNUC__ || defined __APPLE__
@@ -25,8 +17,6 @@
 #endif
 
 
-#include "quaternion_file.h"
-
 #include "load_data.h"
 
 #include "quaternion_interpolation.h"
@@ -35,11 +25,6 @@
 
 #include "registration_estimation.h"
 
-
-#include <boost/filesystem.hpp>
-
-using namespace boost::filesystem;
- 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -63,26 +48,26 @@ int main(int argc, char** argv) {
     std::cout << std::endl << "Fragments" << std::endl << std::endl; 
 
    
-    int fragments = number_of_files(data_dir + "/odometry"); 
+    int fragments = number_of(data_dir + "/fragments"); 
 
 
-    for (int i = 0; i < fragments; ++i) {
+    for (int i = 0; i <= fragments; ++i) {
      
                 
         std::cout << i << std::endl; 
         
        
-        std::string odometry = "fragment_" + std::to_string(i); 
+        std::string fragment = "fragment_" + std::to_string(i); 
             
 
         // Read quaternions 
 
-        const std::vector <Quaternion_file> quaternions = read_quaternions_file(data_dir + "/fragments/" + fragment + "/quaternions"); 
+        const std::vector <std::pair <Eigen::Vector4d, double> > quaternions = read_quaternions_file(data_dir + "/fragments/" + fragment + "/quaternions"); 
 
 
         // Interpolate quaternions 
 
-        const std::vector <Quaternion_file> interpolated_quaternions = interpolate_quaternions(quaternions);
+        const std::vector <std::pair <Eigen::Vector4d, double> > interpolated_quaternions = interpolate_quaternions(quaternions);
 
       
         // Load datapackets 
@@ -116,7 +101,7 @@ int main(int argc, char** argv) {
        std::vector <Eigen::Vector3f> translations; 
 
 
-       for (int i = 0; i < odometries; ++i) {
+       for (int i = 0; i <= odometries; ++i) {
 
 
            std::cout << i << std::endl; 
@@ -127,12 +112,12 @@ int main(int argc, char** argv) {
 
            // Read quaternions
 
-           const std::vector <Quaternion_file> quaternions = read_quaternions_file(data_dir + "/odometry/" + odometry  + "/quaternions"); 
+           const std::vector <std::pair <Eigen::Vector4d, double> > quaternions = read_quaternions_file(data_dir + "/odometry/" + odometry  + "/quaternions"); 
 
 
            // Interpolate quaternions
 
-           const std::vector <Quaternion_file> interpolated_quaternions = interpolate_quaternions(quaternions);
+           const std::vector <std::pair <Eigen::Vector4d, double> > = interpolate_quaternions(quaternions);
 
 
            // Load datapackets
@@ -166,7 +151,7 @@ int main(int argc, char** argv) {
        std::cout << "Fragment pairwise registration" << std::endl << std::endl; 
 
 
-       std::vector <pcl::PointCloud <pcl::PointXYZ> > fragment_clouds = load_fragments(data_dir + "/fragments"); 
+       std::vector <pcl::PointCloud <pcl::PointXYZ> > fragment_clouds = load_fragments(data_dir + "/fragments", fragments); 
 
        incremental_pairwise_registration(fragment_clouds, translations, data_dir, visualization); 
 
