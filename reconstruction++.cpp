@@ -25,7 +25,7 @@
 #endif
 
 
-#include "data_types.h"
+#include "quaternion_file.h"
 
 #include "load_data.h"
 
@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
     std::cout << std::endl << "Fragments" << std::endl << std::endl; 
 
    
-    int fragments = number_of(data_dir + "/odometry"); 
+    int fragments = number_of_files(data_dir + "/odometry"); 
 
 
     for (int i = 0; i < fragments; ++i) {
