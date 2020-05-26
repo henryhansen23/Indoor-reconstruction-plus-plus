@@ -18,7 +18,11 @@
 #include <pcl/registration/transforms.h>
 
 
-#include <Eigen/dense>
+#if defined __GNUC__ || defined __APPLE__
+#include <Eigen/Dense>
+#else
+#include <eigen3/Eigen/Dense>
+#endif
 
 
 #include "registration.h"
@@ -57,6 +61,8 @@ void translation_estimation(const std::string data_path, Eigen::Vector3f & trans
      std::vector <Dir> files; 
  
 
+     constexpr int pos = 5; 
+     
      path p(data_path);
  
      for (auto i = directory_iterator(p); i != directory_iterator(); ++i) {
@@ -66,7 +72,7 @@ void translation_estimation(const std::string data_path, Eigen::Vector3f & trans
 
          if (pcd_file == ".DS_Store") {continue;} //If Apple
 
-         int no = std::stoi(pcd_file.substr(5, pcd_file.find("."))); 
+         int no = std::stoi(pcd_file.substr(pos, pcd_file.find("."))); 
 
          files.push_back({pcd_file, no}); 
 
