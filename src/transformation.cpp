@@ -48,7 +48,7 @@ void make_translation_vector(const Eigen::Matrix3d rotation, Eigen::Vector3d & t
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-std::vector <Eigen::Matrix4d> make_transformation_matrices(const std::vector <Quaternion_file> & quaternions) {
+std::vector <Eigen::Matrix4d> make_transformation_matrices(const std::vector <std::pair <Eigen::Vector4d, double> > & quaternions) {
 
 
                               std::vector <Eigen::Matrix4d> matrices;
@@ -63,7 +63,7 @@ std::vector <Eigen::Matrix4d> make_transformation_matrices(const std::vector <Qu
                               for (std::size_t i = 0; i < quaternions.size(); ++i) {
 
 
-                                  make_rotation_matrix(quaternions[i].quat, tripod_rotation); 
+                                  make_rotation_matrix(quaternions[i].first, tripod_rotation); 
 
                                   make_translation_vector(tripod_rotation, tripod_position);  
 
