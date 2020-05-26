@@ -21,9 +21,10 @@
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 
+int number_of_scans(const std::string data_path;
 
-int number_of(const std::string data_path, const int pos_start_number, const std::string sep);
-
+int number_of_directories(const std::string data_path);
+ 
 std::vector <pcl::PointCloud <pcl::PointXYZ> > load_fragments(const std::string fragments_path, const int fragments_number); 
 
 std::vector <std::vector <pcl::PointCloud <pcl::PointXYZ> > > load_datapackets(const std::string path);
