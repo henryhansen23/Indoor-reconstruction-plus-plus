@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 
-int number_of_scans(const std::string data_path;
+int number_of_scans(const std::string data_path);
 
 int number_of_directories(const std::string data_path);
  
