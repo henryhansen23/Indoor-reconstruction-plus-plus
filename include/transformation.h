@@ -16,7 +16,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 
-std::vector <Eigen::Matrix4d> make_transformation_matrices(const std::vector <Quaternion_file> & quaternions); 
+std::vector <Eigen::Matrix4d> make_transformation_matrices(const std::vector <std::pair <Eigen::Vector4d, double> > & quaternions); 
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
