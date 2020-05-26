@@ -13,12 +13,12 @@ link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
 add_executable(reconstruct reconstruction++.cpp 
-                    src/load_data.cpp 
-                    src/quaternion_interpolation.cpp   
-                    src/combine_datapackets.cpp 
-                    src/transformation.cpp 
-                    src/quaternion_operations.cpp 
-                    src/registration.cpp
-                    src/registration_estimation.cpp)
+                           src/load_data.cpp 
+                           src/quaternion_interpolation.cpp   
+                           src/combine_datapackets.cpp 
+                           src/transformation.cpp 
+                           src/quaternion_operations.cpp 
+                           src/registration.cpp
+                           src/registration_estimation.cpp)
 
 target_link_libraries(reconstruct ${PCL_LIBRARIES})
