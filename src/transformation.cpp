@@ -10,8 +10,6 @@
 #endif
 
 
-#include "data_types.h"
-
 #include "quaternion_operations.h"
 
 
