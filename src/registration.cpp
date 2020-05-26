@@ -85,7 +85,7 @@ void Registration::normals_estimation(pcl::PointCloud <pcl::PointNormal>::Ptr cl
 void Registration::alignment_icp_nl(pcl::PointCloud <pcl::PointNormal>::Ptr target, pcl::PointCloud <pcl::PointNormal>::Ptr source, Eigen::Matrix4f & transformation) {
 
 
-     pcl::PointCloud <pcl::PointNormal>::Ptr ICP_result (new pcl::PointCloud <pcl::PointNormal>);
+     pcl::PointCloud <pcl::PointNormal>::Ptr icp_result (new pcl::PointCloud <pcl::PointNormal>);
 
 
      pcl::IterativeClosestPointNonLinear <pcl::PointNormal, pcl::PointNormal> icp;

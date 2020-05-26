@@ -7,7 +7,7 @@
 #include <vector> 
 
 
-#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 
 
 #if defined __GNUC__ || defined __APPLE__
@@ -15,6 +15,9 @@
 #else
 #include <eigen3/Eigen/Dense>
 #endif
+
+
+#include <boost/filesystem.hpp>
 
 
 #include "load_data.h"
@@ -47,8 +50,10 @@ int main(int argc, char** argv) {
   
     std::cout << std::endl << "Fragments" << std::endl << std::endl; 
 
-   
-    int fragments = number_of(data_dir + "/fragments"); 
+  
+    int pos_fragment_number = 9;
+
+    int fragments = number_of(data_dir + "/fragments", pos_fragment_number, " "); 
 
 
     for (int i = 0; i <= fragments; ++i) {
@@ -89,13 +94,15 @@ int main(int argc, char** argv) {
     //////////////////////////////////// Odometry ///////////////////////////////////////////////////////////
 
 
-    if (exists(data_dir + "/odometry")) {
+    if (boost::filesystem::exists(data_dir + "/odometry")) {
 
 
        std::cout << "Odometry" << std::endl << std::endl; 
 
 
-       int odometries = number_of(data_dir + "/odometry"); 
+       int pos_odometry_number = 9;
+
+       int odometries = number_of(data_dir + "/odometry", pos_odometry_number, " "); 
 
 
        std::vector <Eigen::Vector3f> translations; 
@@ -117,7 +124,7 @@ int main(int argc, char** argv) {
 
            // Interpolate quaternions
 
-           const std::vector <std::pair <Eigen::Vector4d, double> > = interpolate_quaternions(quaternions);
+           const std::vector <std::pair <Eigen::Vector4d, double> > interpolated_quaternions = interpolate_quaternions(quaternions);
 
 
            // Load datapackets

@@ -20,12 +20,12 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-std::vector <std::pair <Eigen::Vector4d, double> > quaternions_scan_assignment(const std::vector <std::pair <Eigen::Vector4d, double> > quaternions, std::vector <std::vector <pcl::PointCloud <pcl::PointXYZ> > > & datapacket_clouds) {
+std::vector <std::vector <std::pair <Eigen::Vector4d, double> > > quaternions_scan_assignment(const std::vector <std::pair <Eigen::Vector4d, double> > & quaternions, std::vector <std::vector <pcl::PointCloud <pcl::PointXYZ> > > & datapacket_clouds) {
 
 
                                              int number, current_number = 0, last_number = 0; 
 
-                                             std::vector < std::vector <std::pair <Eigen::Vector4d, double> > > quaternions_scans; 
+                                             std::vector <std::vector <std::pair <Eigen::Vector4d, double> > > quaternions_scans; 
 
                                              std::vector <std::pair <Eigen::Vector4d, double> > quaternions_data_packets;
    

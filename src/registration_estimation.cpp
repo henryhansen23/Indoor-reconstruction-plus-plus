@@ -25,9 +25,9 @@
 #endif
 
 
-#include "registration.h"
+#include "load_data.h"
 
-#include "data_types.h"
+#include "registration.h"
 
 
 #include <boost/filesystem.hpp>
@@ -55,49 +55,31 @@ void translation_estimation(const std::string data_path, Eigen::Vector3f & trans
      pcl::PointCloud <pcl::PointNormal>::Ptr source_sampled (new pcl::PointCloud <pcl::PointNormal>);
 
 
-     ///////////////////////////////// Store odometry files //////////////////////////////////////////////
-
-
-     std::vector <Dir> files; 
- 
-
-     constexpr int pos = 5; 
-     
-     path p(data_path);
- 
-     for (auto i = directory_iterator(p); i != directory_iterator(); ++i) {
-
-
-         std::string pcd_file = i -> path().filename().string(); 
-
-         if (pcd_file == ".DS_Store") {continue;} //If Apple
-
-         int no = std::stoi(pcd_file.substr(pos, pcd_file.find("."))); 
-
-         files.push_back({pcd_file, no}); 
-
-
-     }
-
-     std::sort(files.begin(), files.end(), [](Dir i, Dir j) {return i.number < j.number;}); // Sort by number
-
-
      /////////////////////////////// Non-incremental pairwise registration for translation estimation /////////////////////////////////////////////
 
 
      // The first point cloud is the source
 
-     pcl::io::loadPCDFile <pcl::PointNormal> (data_path + "/" + files[0].name, *source);
+     pcl::io::loadPCDFile <pcl::PointNormal> (data_path + "/scan_0.pcd", *source);
 
 
      // Align all other point clouds pairwise
 
-     for (std::size_t i = 1; i < files.size(); ++i) {
 
- 
+     int pos_scan_number = 5;
+
+     int scans = number_of(data_path, pos_scan_number, " "); 
+
+
+     for (int i = 1; i <= scans; ++i) {
+
+
+          std::string scan = "/scan_" + std::to_string(i); 
+
+
           // Import new target cloud 
 
-          pcl::io::loadPCDFile <pcl::PointNormal> (data_path + "/" + files[i].name, *target);
+          pcl::io::loadPCDFile <pcl::PointNormal> (data_path + scan + ".pcd", *target);
 
                  
           // Prepare target cloud for alignment
