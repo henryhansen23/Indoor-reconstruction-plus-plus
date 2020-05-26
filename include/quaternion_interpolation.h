@@ -9,13 +9,10 @@
 #include <Eigen/dense>
 
 
-#include "data_types.h"
-
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-std::vector <Quaternion_file> interpolate_quaternions(const std::vector <Quaternion_file> & quaternions); 
+const std::vector <std::pair <Eigen::Vector4d, double> > interpolate_quaternions(const std::vector <std::pair <Eigen::Vector4d, double> > & quaternions); 
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
