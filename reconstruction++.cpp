@@ -31,8 +31,6 @@
 #include "registration_estimation.h"
 
 
-typedef std::pair <Eigen::Vector4d, double> quaternion_time;
-
 typedef pcl::PointCloud <pcl::PointXYZ> point_cloud; 
 
 
@@ -72,12 +70,12 @@ int main(int argc, char ** argv) {
 
         // Read quaternions 
 
-        const std::vector <quaternion_time> quaternions = read_quaternions_file(data_dir + "/fragments/" + fragment + "/quaternions"); 
+        const std::vector <std::pair <Eigen::Vector4d, double> > quaternions = read_quaternions_file(data_dir + "/fragments/" + fragment + "/quaternions"); 
 
 
         // Interpolate quaternions 
 
-        const std::vector <quaternion_time> interpolated_quaternions = interpolate_quaternions(quaternions);
+        const std::vector <Eigen::Vector4d> interpolated_quaternions = interpolate_quaternions(quaternions);
 
       
         // Load datapackets 
@@ -122,12 +120,12 @@ int main(int argc, char ** argv) {
 
            // Read quaternions
 
-           const std::vector <quaternion_time> quaternions = read_quaternions_file(data_dir + "/odometry/" + odometry  + "/quaternions"); 
+           const std::vector <std::pair <Eigen::Vector4d, double> > quaternions = read_quaternions_file(data_dir + "/odometry/" + odometry  + "/quaternions"); 
 
 
            // Interpolate quaternions
 
-           const std::vector <quaternion_time> interpolated_quaternions = interpolate_quaternions(quaternions);
+           const std::vector <Eigen::Vector4d> interpolated_quaternions = interpolate_quaternions(quaternions);
 
 
            // Load datapackets
