@@ -22,14 +22,14 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-std::vector <std::vector <std::pair <Eigen::Vector4d, double> > > quaternions_scan_assignment(const std::vector <std::pair <Eigen::Vector4d, double> > & quaternions, std::vector <std::vector <pcl::PointCloud <pcl::PointXYZ> > > & datapacket_clouds) {
+std::vector <std::vector <Eigen::Vector4d> > quaternions_scan_assignment(const std::vector <Eigen::Vector4d> & quaternions, std::vector <std::vector <pcl::PointCloud <pcl::PointXYZ> > > & datapacket_clouds) {
 
 
                                                                   int number, current_number = 0, last_number = 0; 
 
-                                                                  std::vector <std::vector <std::pair <Eigen::Vector4d, double> > > quaternions_scans; 
+                                                                  std::vector <std::vector <Eigen::Vector4d> > quaternions_scans; 
 
-                                                                  std::vector <std::pair <Eigen::Vector4d, double> > quaternions_data_packets;
+                                                                  std::vector <Eigen::Vector4d> quaternions_data_packets;
    
 
                                                                   // Assign the qauternions to the respective datapackets and scans  
@@ -68,10 +68,10 @@ std::vector <std::vector <std::pair <Eigen::Vector4d, double> > > quaternions_sc
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-void combine_datapackets_to_scans(std::vector <std::vector <pcl::PointCloud <pcl::PointXYZ> > > datapacket_clouds, const std::vector <std::pair <Eigen::Vector4d, double> > & quaternions, const std::string path) {
+void combine_datapackets_to_scans(std::vector <std::vector <pcl::PointCloud <pcl::PointXYZ> > > datapacket_clouds, const std::vector <Eigen::Vector4d> & quaternions, const std::string path) {
 
 
-     const std::vector <std::vector <std::pair <Eigen::Vector4d, double> > > quaternions_scans = quaternions_scan_assignment(quaternions, datapacket_clouds);
+     const std::vector <std::vector <Eigen::Vector4d> > quaternions_scans = quaternions_scan_assignment(quaternions, datapacket_clouds);
 
 
      std::vector <Eigen::Matrix4d> transformation_matrices;
@@ -126,7 +126,7 @@ void combine_datapackets_to_scans(std::vector <std::vector <pcl::PointCloud <pcl
 void combine_datapackets_to_fragment(std::vector <std::vector <pcl::PointCloud <pcl::PointXYZ> > > datapacket_clouds, const std::vector <std::pair <Eigen::Vector4d, double> > & quaternions, const std::string path) {
 
 
-     const std::vector <std::vector <std::pair <Eigen::Vector4d, double> > > quaternions_scans = quaternions_scan_assignment(quaternions, datapacket_clouds);
+     const std::vector <std::vector <Eigen::Vector4d> quaternions_scans = quaternions_scan_assignment(quaternions, datapacket_clouds);
 
 
      pcl::PointCloud <pcl::PointXYZ>::Ptr datapackets_combined (new pcl::PointCloud <pcl::PointXYZ>);
