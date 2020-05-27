@@ -1,5 +1,7 @@
 
 
+#include <utility>
+
 #include <vector> 
 
 
@@ -13,11 +15,11 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-std::vector <std::pair <Eigen::Vector4d, double> > interpolate_quaternions(const std::vector <std::pair <Eigen::Vector4d, double> > & quaternions) {
+std::vector <Eigen::Vector4d> interpolate_quaternions(const std::vector <std::pair <Eigen::Vector4d, double> > & quaternions) {
 
 
   
-                                                   std::vector <std::pair <Eigen::Vector4d, double> > interpolated_quaternions; 
+                                                   std::vector <std::pair <Eigen::Vector4d, double> > interpolated_quaternions_time; 
   
   
                                                    std::vector <Eigen::Vector4d> equal_quaternions; 
@@ -42,7 +44,7 @@ std::vector <std::pair <Eigen::Vector4d, double> > interpolate_quaternions(const
 
                                                              equal_quaternions.push_back(previous_quaternion);
 
-                                                             interpolated_quaternions.pop_back();
+                                                             interpolated_quaternions_time.pop_back();
 
                                                              timestamp.push_back(previous_time);
 
@@ -95,13 +97,13 @@ std::vector <std::pair <Eigen::Vector4d, double> > interpolate_quaternions(const
                                                                         a(2) * timestamp[j] + b(2), 
                                                                         a(3) * timestamp[j] + b(3); 
 
-                                                                   interpolated_quaternions.push_back(std::make_pair(q, timestamp[j]));
+                                                                   interpolated_quaternions_time.push_back(std::make_pair(q, timestamp[j]));
 
 
                                                                }
 
 
-                                                               interpolated_quaternions.push_back(std::make_pair(quaternions[i].first, quaternions[i].second));
+                                                               interpolated_quaternions_time.push_back(std::make_pair(quaternions[i].first, quaternions[i].second));
 
 
                                                                equal_quaternions.clear(); 
@@ -119,7 +121,7 @@ std::vector <std::pair <Eigen::Vector4d, double> > interpolate_quaternions(const
                                                             else {
 
 
-                                                                 interpolated_quaternions.push_back(std::make_pair(quaternions[i].first, quaternions[i].second));
+                                                                 interpolated_quaternions_time.push_back(std::make_pair(quaternions[i].first, quaternions[i].second));
 
                                                                  previous_quaternion = quaternions[i].first;
 
@@ -142,13 +144,19 @@ std::vector <std::pair <Eigen::Vector4d, double> > interpolate_quaternions(const
 
                                                       for (std::size_t i = 0; i < equal_quaternions.size(); ++i) {
   
-                                                          interpolated_quaternions.push_back(std::make_pair(equal_quaternions[i], timestamp[i]));
+                                                          interpolated_quaternions_time.push_back(std::make_pair(equal_quaternions[i], timestamp[i]));
 
                                                       }
 
 
                                                    }
-                                            
+  
+  std::vector <Eigen::Vector4d> interpolated_quaternions (interpolated_quaternions_time.size());
+  
+  for (std::size_t i; i < interpolated_quaternions.size(); ++i) {
+    
+                                   interpolated_quaternions[i] = interpolated_quaternions_time[i].first;
+  }
                               
                                                    return interpolated_quaternions; 
 
