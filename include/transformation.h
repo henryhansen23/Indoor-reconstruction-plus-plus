@@ -3,8 +3,6 @@
 #pragma once
 
 
-#include <utility>
-
 #include <vector> 
 
 
@@ -18,7 +16,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 
-std::vector <Eigen::Matrix4d> make_transformation_matrices(const std::vector <std::pair <Eigen::Vector4d, double> > & quaternions); 
+std::vector <Eigen::Matrix4d> make_transformation_matrices(const std::vector <Eigen::Vector4d> & quaternions); 
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
