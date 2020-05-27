@@ -216,62 +216,62 @@ std::vector <std::vector <pcl::PointCloud <pcl::PointXYZ> > > load_datapackets(c
 std::vector <std::pair <Eigen::Vector4d, double> > read_quaternions_file(const std::string path) {
 
                 
-                              std::vector <std::pair <Eigen::Vector4d, double> > quaternions;     
+                                                   std::vector <std::pair <Eigen::Vector4d, double> > quaternions;     
         
  
-                              std::ifstream input(path + "/" + "quaternions_datapacket.csv");
+                                                   std::ifstream input(path + "/" + "quaternions_datapacket.csv");
 	
-	                      const std::string delimiter = ",";
+	                                           const std::string delimiter = ",";
 
-                              std::string line;
+                                                   std::string line;
 
 
-                              // Read line 
+                                                   // Read lines 
 
-                              std::getline(input, line); // Read first line
+                                                   std::getline(input, line); // Read first line
 
-                              while (std::getline(input, line)) {
+                                                   while (std::getline(input, line)) {
 
           
-	                            int pos = 0;
+	                                                 int pos = 0;
 
-                                    std::vector <double> row;
+                                                         std::vector <double> row;
  
 
-                                    // Split numbers by delimiter 
+                                                         // Split numbers by delimiter 
 
-    	                            while ((pos = line.find(delimiter)) != std::string::npos)  {
+    	                                                 while ((pos = line.find(delimiter)) != std::string::npos)  {
 
     
-		                          double number = std::stod(line.substr(0, pos));
+		                                               double number = std::stod(line.substr(0, pos));
 
-                                          row.push_back(number);
+                                                               row.push_back(number);
 
-                                          line.erase(0, pos + delimiter.length());
-
-
-                                    }
+                                                               line.erase(0, pos + delimiter.length());
 
 
-                                    // Store row  
+                                                         }
+
+
+                                                         // Store row  
 				      
-				    Eigen::Vector4d quat;     
+				                         Eigen::Vector4d quat;     
 
-                                    for (int j = 0; j < 4; ++j) {
+                                                         for (int j = 0; j < 4; ++j) {
 
-                                        quat(j) = row[j]; 
+                                                             quat(j) = row[j]; 
 
-                                    }
+                                                         }
 
-                                    double time = row[4]; 
+                                                         double time = row[4]; 
 
-                                    quaternions.push_back(std::make_pair(quat, time));
+                                                         quaternions.push_back(std::make_pair(quat, time));
 
         
-                                }
+                                                   }
 
 
-                                return quaternions; 
+                                                   return quaternions; 
 
 
 }
