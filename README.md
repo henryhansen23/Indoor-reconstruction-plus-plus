@@ -30,8 +30,8 @@ How to use this script with command line arguments:
 | ----------- | ----------- |
 | -h      | Prints a help message|
 | -d   | Directory name of where to save the pcds |
-| -f   | Specify fragment number |
-| -o   | or: specify odometry number |
+| -f   | Specify fragment number (0,1,2,...,n)|
+| -o   | Specify odometry number (01,12,23,...,n)|
 | -start   | Specify field of view start degree [0-359]|
 | -end   | Specify field of view end degree [0-359] |
 
@@ -45,9 +45,9 @@ press **ctrl c** to stop the data collection.
 
 This program processes all collected point cloud data and IMU data in a data folder.
 Datapackets are turned into fragments and each fragment is then visualized.
-The odometry translation between the fragments is estimated with ICP. 
+The odometry translation between the fragments is estimated with non-linear ICP. 
 A rough computation time estimate for odometry is 1 minute for every 5 meters. 
-The estimated translations are used for initial alignment in the ICP alignment of the fragments. 
+The estimated translations are used for initial alignment for the Generalized ICP whichs align the fragments. 
 
 To reconstruct the captured scene, run the "reconstruct"-execuatable by:
 
