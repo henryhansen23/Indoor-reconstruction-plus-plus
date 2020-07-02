@@ -69,7 +69,7 @@ void translation_estimation(const std::string data_path, Eigen::Vector3f & trans
      int scans = number_of_scans(data_path); 
 
 
-     for (int i = 1; i <= scans; ++i) {
+     for (int i = 1; i < scans; ++i) {
 
 
           std::string scan = "/scan_" + std::to_string(i); 
