@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 
 project(interpolation_vlp)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 11)
 
 add_executable(interpolation_vlp
                Tinkerforge_IMU2.0/brick_imu_v2.cpp
@@ -30,7 +30,7 @@ endif()
 
 # Find package PCL
 
-find_package(PCL 1.9 REQUIRED)
+find_package(PCL 1.5 REQUIRED)
 
 # Additional include directories
 
