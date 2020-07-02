@@ -59,7 +59,7 @@ int number_of_scans(const std::string data_path) {
     }
 
  
-    return number; 
+    return number + 1; 
    
 
 }
@@ -97,7 +97,7 @@ int number_of_directories(const std::string data_path) {
     }
 
  
-    return number; 
+    return number + 1;
    
 
 }
@@ -192,7 +192,7 @@ std::vector <std::vector <pcl::PointCloud <pcl::PointXYZ> > > load_datapackets(c
                                                               int n_scans = number_of_scans(path); 
 
 
-                                                              for (int i = 0; i <= n_scans; ++i) {
+                                                              for (int i = 0; i < n_scans; ++i) {
 
               
                                                                   datapackets_scan_clouds = load_datapackets_in_one_scan(i, path); 
