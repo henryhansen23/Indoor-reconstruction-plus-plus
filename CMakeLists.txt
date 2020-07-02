@@ -17,7 +17,6 @@ add_executable(reconstruct reconstruction++.cpp
                            src/quaternion_interpolation.cpp   
                            src/combine_datapackets.cpp 
                            src/transformation.cpp 
-                           src/quaternion_operations.cpp 
                            src/registration.cpp
                            src/registration_estimation.cpp)
 
