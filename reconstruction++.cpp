@@ -59,7 +59,7 @@ int main(int argc, char ** argv) {
     int fragments = number_of_directories(data_dir + "/fragments"); 
 
 
-    for (int i = 0; i <= fragments; ++i) {
+    for (int i = 0; i < fragments; ++i) {
      
                 
         std::cout << i << std::endl; 
@@ -109,7 +109,7 @@ int main(int argc, char ** argv) {
        std::vector <Eigen::Vector3f> translations; 
 
 
-       for (int i = 0; i <= odometries; ++i) {
+       for (int i = 0; i < odometries; ++i) {
 
 
            std::cout << i << std::endl; 
