@@ -30,8 +30,8 @@ How to use this script with command line arguments:
 | ----------- | ----------- |
 | -h      | Prints a help message|
 | -d   | Directory name of where to save the pcds |
-| -f   | Specify fragment number |
-| -o   | or: specify odometry number |
+| -f   | Specify fragment number (0,1,2,...,n)|
+| -o   | Specify odometry number (01,12,23,...,n)|
 | -start   | Specify field of view start degree [0-359]|
 | -end   | Specify field of view end degree [0-359] |
 
