@@ -6,9 +6,11 @@ set(CMAKE_CXX_STANDARD 11)
 
 find_package(PCL 1.5 REQUIRED)
 
+find_package(Boost 1.53.0 REQUIRED COMPONENTS program_options)
+
 include_directories(include/)
 
-include_directories(${PCL_INCLUDE_DIRS})
+include_directories(${PCL_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
@@ -18,6 +20,7 @@ add_executable(reconstruct reconstruction++.cpp
                            src/combine_datapackets.cpp 
                            src/transformation.cpp 
                            src/registration.cpp
-                           src/registration_estimation.cpp)
+                           src/registration_estimation.cpp
+			   src/cmdline.cpp)
 
-target_link_libraries(reconstruct ${PCL_LIBRARIES})
+target_link_libraries(reconstruct ${PCL_LIBRARIES} ${Boost_LIBRARIES})

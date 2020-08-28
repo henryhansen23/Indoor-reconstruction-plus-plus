@@ -1,13 +1,7 @@
-
-
 #include <iostream>
-
 #include <string> 
-
 #include <utility>
-
 #include <vector> 
-
 
 #include <pcl/point_types.h>
 
@@ -18,36 +12,30 @@
 #include <eigen3/Eigen/Dense>
 #endif
 
-
 #include <boost/filesystem.hpp>
 
-
+// #include "cmd_line_parser.h"
 #include "load_data.h"
-
 #include "quaternion_interpolation.h"
-
 #include "combine_datapackets.h"
-
 #include "registration_estimation.h"
-
+#include "cmdline.h"
 
 typedef pcl::PointCloud <pcl::PointXYZ> point_cloud; 
 
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-int main(int argc, char ** argv) {
-
-
+int main(int argc, char ** argv)
+{
     //////////////////////////////// Command line arguments /////////////////////////////////////////
 
+    CmdLine cmdline( argc, argv );
 
-    std::string data_dir = argv[1];
+    const std::string& data_dir = cmdline.getDataDir(); // argv[1];
 
-    bool visualization = false;
+    bool visualization = cmdline.getVisualize(); // false;
 
-    if (argc > 2) {std::string arg = argv[2]; if (arg == "v") {visualization = true;}}
+    // if (argc > 2) {std::string arg = argv[2]; if (arg == "v") {visualization = true;}}
 
 
     //////////////////////////////////// Fragments ///////////////////////////////////////////////////
@@ -161,7 +149,11 @@ int main(int argc, char ** argv) {
 
        std::vector <point_cloud> fragment_clouds = load_fragments(data_dir + "/fragments", fragments); 
 
-       incremental_pairwise_registration(fragment_clouds, translations, data_dir, visualization); 
+       incremental_pairwise_registration( fragment_clouds,
+                                          translations,
+                                          data_dir,
+                                          cmdline.getICPType(),
+                                          visualization ); 
 
 
     }
