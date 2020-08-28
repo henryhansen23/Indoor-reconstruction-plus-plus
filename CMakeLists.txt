@@ -24,3 +24,5 @@ add_executable(reconstruct reconstruction++.cpp
 			   src/cmdline.cpp)
 
 target_link_libraries(reconstruct ${PCL_LIBRARIES} ${Boost_LIBRARIES})
+
+add_subdirectory(interpolation_data_collection)
