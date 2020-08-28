@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 find_package(PCL 1.5 REQUIRED)
 
-find_package(Boost 1.53.0 REQUIRED COMPONENTS program_options)
+find_package(Boost 1.53.0 REQUIRED COMPONENTS filesystem program_options)
 
 include_directories(include/)
 
