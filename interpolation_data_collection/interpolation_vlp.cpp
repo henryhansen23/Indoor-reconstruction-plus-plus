@@ -3,11 +3,9 @@
 #include <fstream>
 #include <stdlib.h>
 
-
 // VelodyneCapture 
 
 #include "VelodyneCapture.h"
-
 
 // PCL
 
@@ -17,11 +15,9 @@
 #include <pcl/features/normal_3d.h>
 #include <pcl/console/parse.h>
 
-
 // Boost 
 
 #include <boost/filesystem.hpp>
-
 
 // Tinkerforge IMU2.0
 
@@ -37,21 +33,21 @@
 volatile sig_atomic_t interrupted = false;
 
 
-void signal_handler(int s) {
-
+void signal_handler(int s)
+{
     interrupted = true;
 }
 
-double clamp(double v) {
-
+double clamp(double v)
+{
     const double t = v < 0 ? 0 : v;
 
     return t > 1.0 ? 1.0 : t;
 
 }
 
-void print_help (const char* prog_name) {
- 
+void print_help (const char* prog_name)
+{
      std::cout << "\n\nUsage: "<<prog_name<<" [options]\n\n"
                << "Options:\n"
                << "-----------------------------------------------------------\n"
@@ -72,16 +68,13 @@ void print_help (const char* prog_name) {
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 
-int main( int argc, const char *const *argv ) {
-
-
+int main( int argc, const char *const *argv )
+{
     signal(SIGINT, signal_handler);
-
 
     // -------------------------------------------
     // ------ COMMAND-LINE ARGUMENT PARSING ------
     // -------------------------------------------
-
 
     std::string directory;
     std::string path;
@@ -439,11 +432,8 @@ int main( int argc, const char *const *argv ) {
             std::stringstream stream;
 
             stream << "0x00";
-
             stream << std::setfill ('0') << std::setw(2) << std::hex << int(r*255);
-
             stream << std::setfill ('0') << std::setw(2) << std::hex << int(g*255);
-
             stream << std::setfill ('0') << std::setw(2) << std::hex << int(b*255);
 
             std::string rgb_hex(stream.str());
@@ -480,7 +470,6 @@ int main( int argc, const char *const *argv ) {
             // If all pcd points are inside scope, then write the pcd
 
             if (write_pcd and cloud.size() > 0) {
-
 
                // Setting the filename string
 
@@ -553,11 +542,7 @@ int main( int argc, const char *const *argv ) {
                         << lina_x / 100.0 << "," << lina_y / 100.0 << "," << lina_z / 100.0 <<"\n";
 
                imu_data.close();
-
-
             }
-
-
     }
 
 
@@ -566,6 +551,4 @@ int main( int argc, const char *const *argv ) {
     ipcon_destroy(&ipcon); // Calls ipcon_disconnect internally
 
     return 0;
-
-
 }
