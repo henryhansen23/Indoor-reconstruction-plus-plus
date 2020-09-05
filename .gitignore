@@ -39,3 +39,5 @@ build/
 # Temporary files
 .DS_Store
 
+# CLion project files
+.idea
