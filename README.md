@@ -19,7 +19,7 @@ This script is built upon [UnaNancyOwen's simple program](https://github.com/Una
 
 All data packets are written to a binary pcd file the moment it is retrieved, and an IMU measurement is addressed to a separate line in a CSV file. The point cloud is colored based on the intensity return, where the intensity value is converted to RGB float with a color mapping procedure. 
 
-A fragment is a staionary sweep while an odometry is a measurement done while moving to estimate the displacement.
+A fragment is a stationary sweep while an odometry is a measurement done while moving to estimate the displacement.
 Odometry measurements can be done with normal walking speed. 
 
 The captured data will be stored in the build folder. 
