@@ -1,10 +1,6 @@
-
-
 #pragma once
 
-
-#include <vector> 
-
+#include <vector>
 
 #if defined __GNUC__ || defined __APPLE__
 #include <Eigen/Dense>
@@ -12,11 +8,7 @@
 #include <eigen3/Eigen/Dense>
 #endif
 
-
 /////////////////////////////////////////////////////////////////////////////////////////////
-
-
-std::vector <Eigen::Matrix4d> make_transformation_matrices(const std::vector <Eigen::Vector4d> & quaternions); 
-
-
+std::vector<Eigen::Matrix4d>
+make_transformation_matrices(const std::vector<Eigen::Vector4d> &quaternions);
 /////////////////////////////////////////////////////////////////////////////////////////////

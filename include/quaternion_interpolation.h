@@ -1,12 +1,7 @@
-
-
 #pragma once
 
-
 #include <utility>
-
-#include <vector> 
-
+#include <vector>
 
 #if defined __GNUC__ || defined __APPLE__
 #include <Eigen/Dense>
@@ -14,11 +9,7 @@
 #include <eigen3/Eigen/Dense>
 #endif
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-const std::vector <Eigen::Vector4d> interpolate_quaternions(const std::vector <std::pair <Eigen::Vector4d, double> > & quaternions_time); 
-
-
+const std::vector<Eigen::Vector4d>
+interpolate_quaternions(const std::vector<std::pair<Eigen::Vector4d, double> > &quaternions_time);
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
