@@ -6,16 +6,17 @@
 #include <vector> 
 
 
-#include <Eigen/dense>
-
-
-#include "data_types.h"
+#if defined __GNUC__ || defined __APPLE__
+#include <Eigen/Dense>
+#else
+#include <eigen3/Eigen/Dense>
+#endif
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 
-std::vector <Eigen::Matrix4d> make_transformation_matrices(const std::vector <Quaternion_file> & quaternions); 
+std::vector <Eigen::Matrix4d> make_transformation_matrices(const std::vector <Eigen::Vector4d> & quaternions); 
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////

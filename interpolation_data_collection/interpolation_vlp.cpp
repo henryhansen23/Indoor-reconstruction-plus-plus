@@ -1,70 +1,53 @@
-
 #include <iostream>
-
 #include <vector>
-
 #include <fstream>
-
 #include <stdlib.h>
-
 
 // VelodyneCapture 
 
 #include "VelodyneCapture.h"
 
-
 // PCL
 
 #include <pcl/io/pcd_io.h>
-
 #include <pcl/visualization/cloud_viewer.h>
-
 #include <pcl/common/common_headers.h>
-
 #include <pcl/features/normal_3d.h>
-
 #include <pcl/console/parse.h>
-
 
 // Boost 
 
 #include <boost/filesystem.hpp>
 
-
 // Tinkerforge IMU2.0
 
 #include "Tinkerforge_IMU2.0/ip_connection.h"
-
 #include "Tinkerforge_IMU2.0/brick_imu_v2.h"
 
 
 #define HOST "localhost"
-
 #define PORT 4223
-
 #define UID "64tUkb" // Change XXYYZZ to the UID of your IMU Brick 2.0
-
 #define PI 3.14159265359 
-
 
 volatile sig_atomic_t interrupted = false;
 
 
-void signal_handler(int s) {
-
+void signal_handler(int s)
+{
     interrupted = true;
 }
 
-double clamp(double v) {
-
+double clamp(double v)
+{
     const double t = v < 0 ? 0 : v;
 
     return t > 1.0 ? 1.0 : t;
 
 }
 
-void print_help (const char* prog_name) {
- 
+void print_help (const char* prog_name)
+{
      std::cout << "\n\nUsage: "<<prog_name<<" [options]\n\n"
                << "Options:\n"
                << "-----------------------------------------------------------\n"
@@ -85,55 +68,45 @@ void print_help (const char* prog_name) {
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 
-int main( int argc, const char *const *argv ) {
-
-
+int main( int argc, const char *const *argv )
+{
     signal(SIGINT, signal_handler);
-
 
     // -------------------------------------------
     // ------ COMMAND-LINE ARGUMENT PARSING ------
     // -------------------------------------------
 
-
     std::string directory;
-
     std::string path;
-
     std::ofstream quaternion;
-
     std::ofstream imu_data;
-
     std::string fragment;
-
     std::string odometry;
-
     int fov_start;
-
     int fov_end;
-
     bool write_pcd;
-
     std::vector <std::string> pcds;
-
 
     // Command line arguments
 
-    pcl::console::parse_argument(argc, argv, "-d", directory);
+    char opt_d[] = "-d";
+    char opt_f[] = "-f";
+    char opt_o[] = "-o";
+    char opt_s[] = "-start";
+    char opt_e[] = "-end";
+    char opt_h[] = "-h";
 
-    pcl::console::parse_argument(argc, argv, "-f", fragment);
-
-    pcl::console::parse_argument(argc, argv, "-o", odometry);
-
-    pcl::console::parse_argument(argc, argv, "-start", fov_start);
-
-    pcl::console::parse_argument(argc, argv, "-end", fov_end);
+    pcl::console::parse_argument(argc, (char**)argv, opt_d, directory);
+    pcl::console::parse_argument(argc, (char**)argv, opt_f, fragment);
+    pcl::console::parse_argument(argc, (char**)argv, opt_o, odometry);
+    pcl::console::parse_argument(argc, (char**)argv, opt_s, fov_start);
+    pcl::console::parse_argument(argc, (char**)argv, opt_e, fov_end);
 
 
     // Check correct command line arguments
 
 
-    if (pcl::console::find_switch(argc, argv, "-h")) {
+    if (pcl::console::find_switch(argc, (char**)argv, opt_h)) {
 
         print_help(argv[0]);
 
@@ -212,7 +185,7 @@ int main( int argc, const char *const *argv ) {
 
     // Setting correct fragment path
 
-    if (pcl::console::find_switch(argc, argv, "-f")) {
+    if (pcl::console::find_switch(argc, (char**)argv, "-f")) {
 
         path = "../../build/" + directory + "/fragments/fragment_" + fragment + "/";
 
@@ -222,7 +195,7 @@ int main( int argc, const char *const *argv ) {
 
     // Setting correct odometry path
 
-    else if (pcl::console::find_switch(argc, argv, "-o")) {
+    else if (pcl::console::find_switch(argc, (char**)argv, "-o")) {
 
         path = "../../build/" + directory + "/odometry/odometry_" + odometry + "/";
 
@@ -459,11 +432,8 @@ int main( int argc, const char *const *argv ) {
             std::stringstream stream;
 
             stream << "0x00";
-
             stream << std::setfill ('0') << std::setw(2) << std::hex << int(r*255);
-
             stream << std::setfill ('0') << std::setw(2) << std::hex << int(g*255);
-
             stream << std::setfill ('0') << std::setw(2) << std::hex << int(b*255);
 
             std::string rgb_hex(stream.str());
@@ -500,7 +470,6 @@ int main( int argc, const char *const *argv ) {
             // If all pcd points are inside scope, then write the pcd
 
             if (write_pcd and cloud.size() > 0) {
-
 
                // Setting the filename string
 
@@ -573,11 +542,7 @@ int main( int argc, const char *const *argv ) {
                         << lina_x / 100.0 << "," << lina_y / 100.0 << "," << lina_z / 100.0 <<"\n";
 
                imu_data.close();
-
-
             }
-
-
     }
 
 
@@ -586,6 +551,4 @@ int main( int argc, const char *const *argv ) {
     ipcon_destroy(&ipcon); // Calls ipcon_disconnect internally
 
     return 0;
-
-
 }

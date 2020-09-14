@@ -2,6 +2,8 @@
 
 #include <string> 
 
+#include <utility>
+
 #include <vector> 
 
 
@@ -10,11 +12,12 @@
 #include <pcl/io/pcd_io.h>
 
 
-#include <Eigen/dense>
+#if defined __GNUC__ || defined __APPLE__
+#include <Eigen/Dense>
+#else
+#include <eigen3/Eigen/Dense>
+#endif
  
-
-#include "data_types.h"
-
 
 #include <boost/filesystem.hpp>
 
@@ -25,14 +28,13 @@ using namespace boost::filesystem;
 
 
 int number_of_scans(const std::string data_path) {
+	
 
-
-    int number = 0, new_number; 
-
-    const int pos_number = 5; 
-
-    std::string scan_number;
-
+    constexpr int pos_start_number = 5; 
+	
+	
+    int number = 0;
+	
       
     path p(data_path); 
 
@@ -43,10 +45,8 @@ int number_of_scans(const std::string data_path) {
 
         if (file == ".DS_Store") {continue;} // If Apple
   
-  
-        scan_number = file.substr(pos_number, file.find("_", pos_number) - pos_number);     
-
-        new_number = std::stoi(scan_number); 
+	    
+	int new_number = std::stoi(file.substr(pos_start_number, file.find("_", pos_start_number) - pos_start_number)); 
 
 
         if (new_number > number) {
@@ -59,7 +59,7 @@ int number_of_scans(const std::string data_path) {
     }
 
  
-    return number; 
+    return number + 1; 
    
 
 }
@@ -68,44 +68,57 @@ int number_of_scans(const std::string data_path) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-std::vector <pcl::PointCloud <pcl::PointXYZ> > load_fragments(const std::string fragments_path) {
-
-
-                                               path p(fragments_path); 
-
-                                               std::vector <Dir> fragments; 
+int number_of_directories(const std::string data_path) {
 	
 
-                                               for (auto i = directory_iterator(p); i != directory_iterator(); ++i) {
+    int number = 0;
+	
+      
+    path p(data_path); 
+
+    for (auto i = directory_iterator(p); i != directory_iterator(); ++i) {
 
 
-                                                   std::string fragments_dir = i -> path().filename().string(); 
+        std::string file = i -> path().filename().string(); 
 
-                                                   if (fragments_dir == ".DS_Store") {continue;} // If Apple
-
-                                                   int no = std::stoi(fragments_dir.substr(fragments_dir.find("_") + 1, fragments_dir.find("."))); 
-
-                                                   fragments.push_back({fragments_dir, no});  
-
-
-                                               } 
+        if (file == ".DS_Store") {continue;} // If Apple
+  
+        
+        int new_number = std::stoi(file.substr(file.find("_") + 1, file.length())); 
 
 
-                                               // Sort by order 
+        if (new_number > number) {
 
-                                               std::sort(fragments.begin(), fragments.end(), [](Dir i, Dir j) {return i.number < j.number;});
+           number = new_number; 
+
+        }
+
+                                
+    }
+
+ 
+    return number + 1;
+   
+
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+std::vector <pcl::PointCloud <pcl::PointXYZ> > load_fragments(const std::string fragments_path, const int fragments_number) {
 
 
                                                // Read clouds
 
                                                std::vector <pcl::PointCloud <pcl::PointXYZ> > clouds; 
       
-                                               for (std::size_t i = 0; i < fragments.size(); ++i) {
+                                               for (int i = 0; i < fragments_number; ++i) {
 
 
                                                    pcl::PointCloud <pcl::PointXYZ> cloud; 
 
-                                                   pcl::io::loadPCDFile <pcl::PointXYZ> (fragments_path + "/" + fragments[i].name + "/fragment.pcd", cloud);
+                                                   pcl::io::loadPCDFile <pcl::PointXYZ> (fragments_path + "/fragment_" + std::to_string(i) + "/fragment.pcd", cloud);
 
                                                    clouds.push_back(cloud); 
 
@@ -125,13 +138,11 @@ std::vector <pcl::PointCloud <pcl::PointXYZ> > load_fragments(const std::string 
 std::vector <pcl::PointCloud <pcl::PointXYZ> > load_datapackets_in_one_scan(const int scan_number, const std::string datapackets_path) {
 
 	
+	                                       constexpr int pos_scan_number = 5;
+	
 	                                       path p(datapackets_path); 
 
                                                std::vector <pcl::PointCloud <pcl::PointXYZ> > clouds; 
-
-                                               const int pos_number = 5;
-
-                                               std::string file_number;  
 
 
                                                for (auto i = directory_iterator(p); i != directory_iterator(); ++i) {
@@ -142,10 +153,10 @@ std::vector <pcl::PointCloud <pcl::PointXYZ> > load_datapackets_in_one_scan(cons
                                                    if (file == ".DS_Store") {continue;} // If Apple
 
 
-                                                   file_number = file.substr(pos_number, file.find("_", pos_number) - pos_number); 
+                                                   std::string scan_file_number = file.substr(pos_scan_number, file.find("_", pos_scan_number) - pos_scan_number); 
    
 
-                                                   if (scan_number == std::stoi(file_number)) {
+                                                   if (scan_number == std::stoi(scan_file_number)) {
 
 
                                                       pcl::PointCloud <pcl::PointXYZ> cloud;
@@ -176,11 +187,12 @@ std::vector <std::vector <pcl::PointCloud <pcl::PointXYZ> > > load_datapackets(c
                                                               std::vector <std::vector <pcl::PointCloud <pcl::PointXYZ> > > fragment_clouds; 
 
                                                               std::vector <pcl::PointCloud <pcl::PointXYZ> > datapackets_scan_clouds; 
+	
 
                                                               int n_scans = number_of_scans(path); 
 
 
-                                                              for (int i = 0; i <= n_scans; ++i) {
+                                                              for (int i = 0; i < n_scans; ++i) {
 
               
                                                                   datapackets_scan_clouds = load_datapackets_in_one_scan(i, path); 
@@ -201,69 +213,65 @@ std::vector <std::vector <pcl::PointCloud <pcl::PointXYZ> > > load_datapackets(c
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-std::vector <Quaternion_file> read_quaternions_file(const std::string path) {
+std::vector <std::pair <Eigen::Vector4d, double> > read_quaternions_file(const std::string path) {
 
                 
-                              std::vector <Quaternion_file> quaternions;
-
-                              Eigen::Vector4d quat;
-
-                              double time;               
+                                                   std::vector <std::pair <Eigen::Vector4d, double> > quaternions;     
         
  
-                              std::ifstream input(path + "/" + "quaternions_datapacket.csv");
+                                                   std::ifstream input(path + "/" + "quaternions_datapacket.csv");
+	
+	                                           const std::string delimiter = ",";
 
-                              std::string line;
-
-                              const std::string delimiter = ",";
+                                                   std::string line;
 
 
-                              // Read line 
+                                                   // Read lines 
 
-                              std::getline(input, line); // Read first line
+                                                   std::getline(input, line); // Read first line
 
-                              while (std::getline(input, line)) {
+                                                   while (std::getline(input, line)) {
 
           
-	                            int pos = 0;
+	                                                 int pos = 0;
 
-	                            double number;
-
-                                    std::vector <double> row;
+                                                         std::vector <double> row;
  
 
-                                    // Split numbers by delimiter 
+                                                         // Split numbers by delimiter 
 
-    	                            while ((pos = line.find(delimiter)) != std::string::npos)  {
+    	                                                 while ((pos = line.find(delimiter)) != std::string::npos)  {
 
     
-		                          number = std::stod(line.substr(0, pos));
+		                                               double number = std::stod(line.substr(0, pos));
 
-                                          row.push_back(number);
+                                                               row.push_back(number);
 
-                                          line.erase(0, pos + delimiter.length());
-
-
-                                    }
+                                                               line.erase(0, pos + delimiter.length());
 
 
-                                    // Store row      
+                                                         }
 
-                                    for (int j = 0; j < 4; ++j) {
 
-                                        quat(j) = row[j]; 
+                                                         // Store row  
+				      
+				                         Eigen::Vector4d quat;     
 
-                                    }
+                                                         for (int j = 0; j < 4; ++j) {
 
-                                    time = row[4]; 
+                                                             quat(j) = row[j]; 
 
-                                    quaternions.push_back({quat, time});
+                                                         }
+
+                                                         double time = row[4]; 
+
+                                                         quaternions.push_back(std::make_pair(quat, time));
 
         
-                                }
+                                                   }
 
 
-                                return quaternions; 
+                                                   return quaternions; 
 
 
 }

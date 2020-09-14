@@ -3,19 +3,22 @@
 #pragma once
 
 
+#include <utility>
+
 #include <vector> 
 
 
-#include <Eigen/dense>
-
-
-#include "data_types.h"
+#if defined __GNUC__ || defined __APPLE__
+#include <Eigen/Dense>
+#else
+#include <eigen3/Eigen/Dense>
+#endif
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-std::vector <Quaternion_file> interpolate_quaternions(const std::vector <Quaternion_file> & quaternions); 
+const std::vector <Eigen::Vector4d> interpolate_quaternions(const std::vector <std::pair <Eigen::Vector4d, double> > & quaternions_time); 
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

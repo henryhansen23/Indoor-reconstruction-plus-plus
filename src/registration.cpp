@@ -19,7 +19,11 @@
 #include <pcl/visualization/pcl_visualizer.h>
 
 
-#include <Eigen/dense>
+#if defined __GNUC__ || defined __APPLE__
+#include <Eigen/Dense>
+#else
+#include <eigen3/Eigen/Dense>
+#endif
 
 
 #include "registration.h"
@@ -81,33 +85,33 @@ void Registration::normals_estimation(pcl::PointCloud <pcl::PointNormal>::Ptr cl
 void Registration::alignment_icp_nl(pcl::PointCloud <pcl::PointNormal>::Ptr target, pcl::PointCloud <pcl::PointNormal>::Ptr source, Eigen::Matrix4f & transformation) {
 
 
-     pcl::PointCloud <pcl::PointNormal>::Ptr ICP_result (new pcl::PointCloud <pcl::PointNormal>);
+     pcl::PointCloud <pcl::PointNormal>::Ptr icp_result (new pcl::PointCloud <pcl::PointNormal>);
 
 
-     pcl::IterativeClosestPointNonLinear <pcl::PointNormal, pcl::PointNormal> ICP;
+     pcl::IterativeClosestPointNonLinear <pcl::PointNormal, pcl::PointNormal> icp;
  
 
-     ICP.setTransformationEpsilon(icp_transformation_epsilon_);
+     icp.setTransformationEpsilon(icp_transformation_epsilon_);
 
-     ICP.setMaxCorrespondenceDistance(icp_max_correspondence_distance_); 
+     icp.setMaxCorrespondenceDistance(icp_max_correspondence_distance_); 
 
-     ICP.setEuclideanFitnessEpsilon(icp_euclidean_fitness_epsilon_); 
+     icp.setEuclideanFitnessEpsilon(icp_euclidean_fitness_epsilon_); 
 
-     ICP.setMaximumIterations(icp_maximum_iterations_);
+     icp.setMaximumIterations(icp_maximum_iterations_);
 
-     ICP.setRANSACOutlierRejectionThreshold(icp_ransac_outlier_rejection_threshold_);
+     icp.setRANSACOutlierRejectionThreshold(icp_ransac_outlier_rejection_threshold_);
 
 
-     ICP.setInputTarget(target);
+     icp.setInputTarget(target);
 
-     ICP.setInputSource(source);      
+     icp.setInputSource(source);      
 
-     ICP.align(*ICP_result);
+     icp.align(*icp_result);
 
 
      // Source to target transformation matrix
 
-     transformation = ICP.getFinalTransformation();
+     transformation = icp.getFinalTransformation();
 
 }
 

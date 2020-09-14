@@ -4,6 +4,7 @@ Indoor reconstruction with Velodyne Lidar and IMU.
 ## Notes:
 Requires:
 * C++ compiler
+* boost
 * PCL with dependencies 
 * CMake
 
