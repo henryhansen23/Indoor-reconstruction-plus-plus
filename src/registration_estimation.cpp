@@ -113,6 +113,11 @@ incremental_pairwise_registration(const std::vector<pcl::PointCloud<pcl::PointXY
         if (icp_type == "non-linear") {
             reg.alignment_icp_nl(target_sampled, source_sampled, transformation_matrix);
         }
+        #if PCL_VERSION_COMPARE(>, 1, 10, 0)
+        else if (icp_type == "symmetric") {
+            reg.alignment_icp_symmetric(target_sampled, source_sampled, transformation_matrix);
+        }
+        #endif
         else {
             if (icp_type != "generalized") {
                 std::cerr << "Unrecognized ICP type " << icp_type
