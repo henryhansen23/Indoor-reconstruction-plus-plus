@@ -1,6 +1,7 @@
 #pragma once
 
 #include <pcl/point_cloud.h>
+#include <pcl/pcl_config.h>
 
 #if defined __GNUC__ || defined __APPLE__
 #include <Eigen/Dense>
@@ -44,6 +45,13 @@ public:
     alignment_icp_nl(const pcl::PointCloud<pcl::PointNormal>::Ptr target,
                      const pcl::PointCloud<pcl::PointNormal>::Ptr source,
                      Eigen::Matrix4f &transformation);
+
+    #if PCL_VERSION_COMPARE(>, 1, 10, 0)
+    void
+    alignment_icp_symmetric(const pcl::PointCloud<pcl::PointNormal>::Ptr target,
+                     const pcl::PointCloud<pcl::PointNormal>::Ptr source,
+                     Eigen::Matrix4f &transformation);
+    #endif
 
     void
     alignment_gicp(const pcl::PointCloud<pcl::PointNormal>::Ptr target,

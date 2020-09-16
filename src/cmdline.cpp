@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include <pcl/pcl_config.h>
+
 #include <boost/program_options.hpp>
 
 #include "cmdline.h"
@@ -19,7 +21,7 @@ CmdLine::CmdLine( int argc, char** argv )
         ("v,v",      po::bool_switch(&_visualize)->default_value(false),
                     "Visualize the reconstruction")
         ("icp",      po::value<std::string>(&_icp),
-                    "The ICP algorithm to use: generalized, non-linear")
+                    "The ICP algorithm to use: generalized, non-linear or symmetric (only with PCL>=1.10)")
         ("data-dir", po::value<std::string>(&_data_dir)->required(),
                     "Directory where pointcloud fragments can be found (positional argument)");
 
@@ -40,7 +42,11 @@ CmdLine::CmdLine( int argc, char** argv )
         else if (vm.count("icp"))
         {
             if( ( vm["icp"].as<std::string>() != "generalized" ) &&
-                ( vm["icp"].as<std::string>() != "non-linear" ) )
+                ( vm["icp"].as<std::string>() != "non-linear" )
+                #if PCL_VERSION_COMPARE(>, 1, 10, 0)
+                && ( vm["icp"].as<std::string>() != "symmetric" )
+                #endif
+                )
             {
                 std::cerr << "Incorrect parameter for ICP option." << std::endl
                         << desc << std::endl;

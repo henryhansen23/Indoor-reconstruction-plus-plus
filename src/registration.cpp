@@ -7,6 +7,7 @@
 #include <pcl/filters/covariance_sampling.h>
 #include <pcl/filters/extract_indices.h>
 #include <pcl/visualization/pcl_visualizer.h>
+#include <pcl/pcl_config.h>
 
 #if defined __GNUC__ || defined __APPLE__
 #include <Eigen/Dense>
@@ -69,6 +70,30 @@ Registration::alignment_icp_nl(pcl::PointCloud<pcl::PointNormal>::Ptr target,
     // Source to target transformation matrix
     transformation = icp.getFinalTransformation();
 }
+
+#if PCL_VERSION_COMPARE(>, 1, 10, 0)
+//////////////////////////// Alignment ICP with normals and symmetric objective ////////////////////////////////////////
+void
+Registration::alignment_icp_symmetric(pcl::PointCloud<pcl::PointNormal>::Ptr target,
+                               pcl::PointCloud<pcl::PointNormal>::Ptr source,
+                               Eigen::Matrix4f &transformation)
+{
+    pcl::PointCloud<pcl::PointNormal>::Ptr icp_result(new pcl::PointCloud<pcl::PointNormal>);
+    pcl::IterativeClosestPointWithNormals<pcl::PointNormal, pcl::PointNormal> icp;
+    icp.setTransformationEpsilon(icp_transformation_epsilon_);
+    icp.setUseSymmetricObjective(true);
+    icp.setMaxCorrespondenceDistance(icp_max_correspondence_distance_);
+    icp.setEuclideanFitnessEpsilon(icp_euclidean_fitness_epsilon_);
+    icp.setMaximumIterations(icp_maximum_iterations_);
+    icp.setRANSACOutlierRejectionThreshold(icp_ransac_outlier_rejection_threshold_);
+    icp.setInputTarget(target);
+    icp.setInputSource(source);
+    icp.align(*icp_result);
+
+    // Source to target transformation matrix
+    transformation = icp.getFinalTransformation();
+}
+#endif
 
 //////////////////////////////////////////// Alignment Generalized ICP ///////////////////////////////////////////////
 void
