@@ -301,7 +301,6 @@ int main( int argc, const char *const *argv )
 
             // adding rgb float to point cloud
             cloud.points[j].rgb = rgb;
-            cloud.points[j].
 
             // Increment counter
             j++;
