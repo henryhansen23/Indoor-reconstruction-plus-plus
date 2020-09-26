@@ -50,6 +50,7 @@ void print_help (const char* prog_name)
                << "-o <int>       or: specify odometry number\n"
                << "-start <int>   Specify field of view start degree [0-359]\n"
                << "-end <int>     Specify field of view end degree [0-359]\n"
+               << "-v             Verbose. Add information to point which laser scanned it \n"
                << "\n\n";
 }
 
@@ -73,6 +74,7 @@ int main( int argc, const char *const *argv )
     std::ofstream imu_data;
     std::string fragment;
     std::string odometry;
+    int laser_num;
     int fov_start;
     int fov_end;
     bool write_pcd;
@@ -85,12 +87,15 @@ int main( int argc, const char *const *argv )
     char opt_s[] = "-start";
     char opt_e[] = "-end";
     char opt_h[] = "-h";
+    char opt_l[] = "-l";
 
     pcl::console::parse_argument(argc, (char**)argv, opt_d, directory);
     pcl::console::parse_argument(argc, (char**)argv, opt_f, fragment);
     pcl::console::parse_argument(argc, (char**)argv, opt_o, odometry);
     pcl::console::parse_argument(argc, (char**)argv, opt_s, fov_start);
     pcl::console::parse_argument(argc, (char**)argv, opt_e, fov_end);
+    pcl::console::parse_argument(argc, (char**)argv, opt_l, laser_num);
+
 
     // Check correct command line arguments
     if (pcl::console::find_switch(argc, (char**)argv, opt_h)) {
@@ -140,13 +145,13 @@ int main( int argc, const char *const *argv )
 
     // Setting correct fragment path
     if (pcl::console::find_switch(argc, (char**)argv, "-f")) {
-        path = "../../build/" + directory + "/fragments/fragment_" + fragment + "/";
+        path = "../../pcds/" + directory + "/fragments/fragment_" + fragment + "/";
         std::cout << "Writing to: fragment_" + fragment << "\n\n";
     }
 
     // Setting correct odometry path
     else if (pcl::console::find_switch(argc, (char**)argv, "-o")) {
-        path = "../../build/" + directory + "/odometry/odometry_" + odometry + "/";
+        path = "../../pcds/" + directory + "/odometry/odometry_" + odometry + "/";
         std::cout << "Writing to: odometry_" + odometry << "\n\n";
     }
 
@@ -224,6 +229,11 @@ int main( int argc, const char *const *argv )
         // Looping over laser by laser (0-15)
         for (const velodyne::Laser &laser : lasers) {
             // Distance, azimuth and vertical of laser
+            if (laser_num >= 0 && laser.id != laser_num) {
+                // if laser is specified, then only get
+                // from the one
+                continue;
+            }
             const auto distance = static_cast<double>( laser.distance );
             const double azimuth = (laser.azimuth * PI) / 180.0;
             const double vertical = (laser.vertical * PI) / 180.0;
@@ -291,6 +301,7 @@ int main( int argc, const char *const *argv )
 
             // adding rgb float to point cloud
             cloud.points[j].rgb = rgb;
+            cloud.points[j].
 
             // Increment counter
             j++;

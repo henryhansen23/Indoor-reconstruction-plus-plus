@@ -51,7 +51,7 @@ main(int argc, char **argv)
         vector4d_t interpolated_quaternions;
         interpolate_quaternions( interpolated_quaternions, quaternions_time );
 
-        // Load datapackets 
+        // Load datapackets
         std::vector<std::vector<point_cloud> >
             datapackets_clouds = load_datapackets(data_dir + "/fragments/" + fragment + "/datapackets");
 

@@ -10,7 +10,7 @@
 #include "transformation.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::vector<std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > >
+std::vector<std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d>>>
 quaternions_scan_assignment(const std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > &quaternions,
                             std::vector<std::vector<pcl::PointCloud<pcl::PointXYZ> > > &datapacket_clouds)
 {
@@ -64,7 +64,7 @@ combine_datapackets_to_fragment(std::vector<std::vector<pcl::PointCloud<pcl::Poi
                                 const std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > &quaternions,
                                 const std::string path)
 {
-    const std::vector<std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > >
+    const std::vector<std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d>>>
         quaternions_scans = quaternions_scan_assignment(quaternions, datapacket_clouds);
     pcl::PointCloud<pcl::PointXYZ>::Ptr datapackets_combined(new pcl::PointCloud<pcl::PointXYZ>);
     std::vector<Eigen::Matrix4d, Eigen::aligned_allocator<Eigen::Matrix4d> > transformation_matrices;
@@ -86,6 +86,9 @@ combine_datapackets_to_fragment(std::vector<std::vector<pcl::PointCloud<pcl::Poi
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> cloud_color(datapackets_combined, 0, 255, 0);
     viz.addPointCloud<pcl::PointXYZ>(datapackets_combined, cloud_color, "cloud 1");
     viz.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 0.5, "cloud 1");
-    viz.spin();
+    while (!viz.wasStopped ())
+    {
+        viz.spinOnce ();
+    }
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
