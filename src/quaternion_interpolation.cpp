@@ -7,29 +7,34 @@
 #include <eigen3/Eigen/Dense>
 #endif
 
+#include "quaternion_interpolation.h"
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::vector<Eigen::Vector4d>
-interpolate_quaternions(const std::vector<std::pair<Eigen::Vector4d, double> > &quaternions_time) {
-    std::vector<std::pair<Eigen::Vector4d, double> > interpolated_quaternions_time;
-    std::vector<Eigen::Vector4d> equal_quaternions;
+void
+interpolate_quaternions( vector4d_t& interpolated_quaternions,
+                         const quart_vector_t& quaternions_time )
+{
+    quart_vector_t interpolated_quaternions_time;
+    vector4d_t equal_quaternions;
     std::vector<double> timestamp;
     Eigen::Vector4d previous_quaternion{1000, 1000, 1000, 1000};  // initialization of variable
     Eigen::Vector4d a, b, q, diff_quat;
     double diff_time, previous_time = 0;
-    for (std::size_t i = 0; i < quaternions_time.size(); ++i) {
-        if (previous_quaternion.isApprox(quaternions_time[i].first)) {
+    for (std::size_t i = 0; i < quaternions_time.first.size(); ++i) {
+        if (previous_quaternion.isApprox(quaternions_time.first[i])) {
             if (equal_quaternions.empty()) {
                 equal_quaternions.push_back(previous_quaternion);
-                interpolated_quaternions_time.pop_back();
+                interpolated_quaternions_time.first .pop_back();
+                interpolated_quaternions_time.second.pop_back();
                 timestamp.push_back(previous_time);
             }
 
-            equal_quaternions.push_back(quaternions_time[i].first);
-            timestamp.push_back(quaternions_time[i].second);
+            equal_quaternions.push_back(quaternions_time.first[i]);
+            timestamp        .push_back(quaternions_time.second[i]);
         } else {
             if (!equal_quaternions.empty()) {
-                diff_quat = quaternions_time[i].first - previous_quaternion;
-                diff_time = quaternions_time[i].second - timestamp[0];
+                diff_quat = quaternions_time.first [i] - previous_quaternion;
+                diff_time = quaternions_time.second[i] - timestamp[0];
 
                 // Slope
                 a << diff_quat(0) / diff_time,
@@ -49,21 +54,22 @@ interpolate_quaternions(const std::vector<std::pair<Eigen::Vector4d, double> > &
                             a(1) * timestamp[j] + b(1),
                             a(2) * timestamp[j] + b(2),
                             a(3) * timestamp[j] + b(3);
-                    interpolated_quaternions_time.push_back(std::make_pair(q, timestamp[j]));
+                    interpolated_quaternions_time.first .push_back( q );
+                    interpolated_quaternions_time.second.push_back( timestamp[j] );
                 }
 
-                interpolated_quaternions_time.push_back(
-                        std::make_pair(quaternions_time[i].first, quaternions_time[i].second));
+                interpolated_quaternions_time.first .push_back( quaternions_time.first [i] );
+                interpolated_quaternions_time.second.push_back( quaternions_time.second[i] );
 
                 equal_quaternions.clear();
                 timestamp.clear();
-                previous_quaternion = quaternions_time[i].first;
-                previous_time = quaternions_time[i].second;
+                previous_quaternion = quaternions_time.first [i];
+                previous_time       = quaternions_time.second[i];
             } else {
-                interpolated_quaternions_time.push_back(
-                        std::make_pair(quaternions_time[i].first, quaternions_time[i].second));
-                previous_quaternion = quaternions_time[i].first;
-                previous_time = quaternions_time[i].second;
+                interpolated_quaternions_time.first .push_back( quaternions_time.first [i] );
+                interpolated_quaternions_time.second.push_back( quaternions_time.second[i] );
+                previous_quaternion = quaternions_time.first [i];
+                previous_time       = quaternions_time.second[i];
             }
         }
     }
@@ -74,7 +80,8 @@ interpolate_quaternions(const std::vector<std::pair<Eigen::Vector4d, double> > &
 
         for (std::size_t i = 0; i < equal_quaternions.size(); ++i) {
 
-            interpolated_quaternions_time.push_back(std::make_pair(equal_quaternions[i], timestamp[i]));
+            interpolated_quaternions_time.first .push_back( equal_quaternions[i] );
+            interpolated_quaternions_time.second.push_back( timestamp[i] );
 
         }
 
@@ -84,17 +91,15 @@ interpolate_quaternions(const std::vector<std::pair<Eigen::Vector4d, double> > &
 
     // Remove time
 
-    std::vector<Eigen::Vector4d> interpolated_quaternions(interpolated_quaternions_time.size());
 
-    for (std::size_t i = 0; i < interpolated_quaternions_time.size(); ++i) {
+    interpolated_quaternions.resize( interpolated_quaternions_time.first.size() );
 
-        interpolated_quaternions[i] = interpolated_quaternions_time[i].first;
+    for (std::size_t i = 0; i < interpolated_quaternions_time.first.size(); ++i) {
+
+        interpolated_quaternions[i] = interpolated_quaternions_time.first[i];
 
 
     }
-
-
-    return interpolated_quaternions;
 
 
 }

@@ -13,6 +13,8 @@
 
 #include <boost/filesystem.hpp>
 
+#include "load_data.h"
+
 using namespace boost::filesystem;
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -100,10 +102,8 @@ load_datapackets(const std::string path)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::vector<std::pair<Eigen::Vector4d, double> >
-read_quaternions_file(const std::string path)
+void read_quaternions_file( quart_vector_t& quaternions, const std::string path)
 {
-    std::vector<std::pair<Eigen::Vector4d, double> > quaternions;
     std::ifstream input(path + "/" + "quaternions_datapacket.csv");
     const std::string delimiter = ",";
     std::string line;
@@ -124,9 +124,9 @@ read_quaternions_file(const std::string path)
             quat(j) = row[j];
         }
         double time = row[4];
-        quaternions.push_back(std::make_pair(quat, time));
+        quaternions.first .push_back( quat );
+        quaternions.second.push_back( time );
     }
-    return quaternions;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -12,6 +12,8 @@
 #include <eigen3/Eigen/Dense>
 #endif
 
+#include "reco_types.h"
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 int
 number_of_scans(const std::string data_path);
@@ -25,6 +27,5 @@ load_fragments(const std::string fragments_path, const int fragments_number);
 std::vector<std::vector<pcl::PointCloud<pcl::PointXYZ> > >
 load_datapackets(const std::string path);
 
-std::vector<std::pair<Eigen::Vector4d, double> >
-read_quaternions_file(const std::string path);
+void read_quaternions_file( quart_vector_t& quaternions, const std::string path);
 ///////////////////////////////////////////////////////////////////////////////////////////

@@ -9,7 +9,10 @@
 #include <eigen3/Eigen/Dense>
 #endif
 
+#include "reco_types.h"
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const std::vector<Eigen::Vector4d>
-interpolate_quaternions(const std::vector<std::pair<Eigen::Vector4d, double> > &quaternions_time);
+void
+interpolate_quaternions( vector4d_t& interpolated_quaternions,
+                         const quart_vector_t& quaternions_time );
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

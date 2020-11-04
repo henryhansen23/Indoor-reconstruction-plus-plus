@@ -43,11 +43,13 @@ main(int argc, char **argv)
         std::string fragment = "fragment_" + std::to_string(i);
 
         // Read quaternions 
-        const std::vector<std::pair<Eigen::Vector4d, double> >
-            quaternions_time = read_quaternions_file(data_dir + "/fragments/" + fragment + "/quaternions");
+        quart_vector_t quaternions_time;
+        read_quaternions_file( quaternions_time,
+                               data_dir + "/fragments/" + fragment + "/quaternions" );
 
         // Interpolate quaternions 
-        const std::vector<Eigen::Vector4d> interpolated_quaternions = interpolate_quaternions(quaternions_time);
+        vector4d_t interpolated_quaternions;
+        interpolate_quaternions( interpolated_quaternions, quaternions_time );
 
         // Load datapackets 
         std::vector<std::vector<point_cloud> >
@@ -65,17 +67,19 @@ main(int argc, char **argv)
     if (boost::filesystem::exists(data_dir + "/odometry")) {
         std::cout << "Odometry" << std::endl << std::endl;
         int odometries = number_of_directories(data_dir + "/odometry");
-        std::vector<Eigen::Vector3f> translations;
+        std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > translations;
         for (int i = 0; i < odometries; ++i) {
             std::cout << i << std::endl;
             std::string odometry = "odometry_" + std::to_string(i);
 
             // Read quaternions
-            const std::vector<std::pair<Eigen::Vector4d, double> >
-                quaternions_time = read_quaternions_file(data_dir + "/odometry/" + odometry + "/quaternions");
+            quart_vector_t quaternions_time;
+            read_quaternions_file( quaternions_time,
+                                   data_dir + "/odometry/" + odometry + "/quaternions" );
 
             // Interpolate quaternions
-            const std::vector<Eigen::Vector4d> interpolated_quaternions = interpolate_quaternions(quaternions_time);
+            vector4d_t interpolated_quaternions;
+            interpolate_quaternions( interpolated_quaternions, quaternions_time );
 
             // Load datapackets
             std::vector<std::vector<point_cloud> >

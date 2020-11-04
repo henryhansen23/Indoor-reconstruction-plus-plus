@@ -25,10 +25,10 @@ make_translation_vector(const Eigen::Matrix3d rotation, Eigen::Vector3d &tripod_
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::vector<Eigen::Matrix4d>
-make_transformation_matrices(const std::vector<Eigen::Vector4d> &quaternions)
+std::vector<Eigen::Matrix4d, Eigen::aligned_allocator<Eigen::Matrix4d> >
+make_transformation_matrices(const std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > &quaternions)
 {
-    std::vector<Eigen::Matrix4d> matrices;
+    std::vector<Eigen::Matrix4d, Eigen::aligned_allocator<Eigen::Matrix4d> > matrices;
     Eigen::Matrix3d tripod_rotation;
     Eigen::Vector3d tripod_position;
     for (std::size_t i = 0; i < quaternions.size(); ++i) {

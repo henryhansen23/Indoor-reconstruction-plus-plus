@@ -25,9 +25,10 @@ CmdLine::CmdLine( int argc, char** argv )
         ("data-dir", po::value<std::string>(&_data_dir)->required(),
                     "Directory where pointcloud fragments can be found (positional argument)");
 
+    po::variables_map vm;
+
     try
     {
-        po::variables_map vm;
         po::store(
             po::command_line_parser(argc, argv).options(desc).positional(p).run(),
             vm );
@@ -51,7 +52,6 @@ CmdLine::CmdLine( int argc, char** argv )
                 std::cerr << "Incorrect parameter for ICP option." << std::endl
                         << desc << std::endl;
             }
-            exit( -1 );
         }
     }
     catch (const po::error &ex)

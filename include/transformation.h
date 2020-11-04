@@ -9,6 +9,6 @@
 #endif
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-std::vector<Eigen::Matrix4d>
-make_transformation_matrices(const std::vector<Eigen::Vector4d> &quaternions);
+std::vector<Eigen::Matrix4d, Eigen::aligned_allocator<Eigen::Matrix4d> >
+make_transformation_matrices(const std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > &quaternions);
 /////////////////////////////////////////////////////////////////////////////////////////////
