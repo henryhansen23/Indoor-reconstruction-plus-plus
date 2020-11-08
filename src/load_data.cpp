@@ -124,7 +124,7 @@ void read_quaternions_file(quart_vector_t& quaternions, const std::string path)
             quat(j) = row[j];
         }
         double time = row[4];
-        quaternions.first.push_back(quat);
+        quaternions.first .push_back(quat);
         quaternions.second.push_back(time);
     }
 }

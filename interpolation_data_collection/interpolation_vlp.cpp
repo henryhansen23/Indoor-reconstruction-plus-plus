@@ -307,7 +307,7 @@ int main( int argc, const char *const *argv )
             // adding rgb float to point cloud
             cloud.points[j].rgb = rgb;
 
-            // adding
+            // adding the laser vertical component to the point label
             cloud.points[j].label = laser.vertical;
 
             // Increment counter
