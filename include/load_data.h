@@ -24,7 +24,7 @@ number_of_directories(const std::string data_path);
 std::vector<pcl::PointCloud<pcl::PointXYZ> >
 load_fragments(const std::string fragments_path, const int fragments_number);
 
-std::vector<std::vector<pcl::PointCloud<pcl::PointXYZ> > >
+std::vector<std::vector<pcl::PointCloud<pcl::PointXYZL> > >
 load_datapackets(const std::string path);
 
 void read_quaternions_file( quart_vector_t& quaternions, const std::string path);

@@ -12,7 +12,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::vector<std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d>>>
 quaternions_scan_assignment(const std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > &quaternions,
-                            std::vector<std::vector<pcl::PointCloud<pcl::PointXYZ> > > &datapacket_clouds)
+                            std::vector<std::vector<pcl::PointCloud<pcl::PointXYZL> > > &datapacket_clouds)
 {
     int number, current_number = 0, last_number = 0;
     std::vector<std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > > quaternions_scans;
@@ -34,7 +34,7 @@ quaternions_scan_assignment(const std::vector<Eigen::Vector4d, Eigen::aligned_al
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void
-combine_datapackets_to_scans(std::vector<std::vector<pcl::PointCloud<pcl::PointXYZ> > > datapacket_clouds,
+combine_datapackets_to_scans(std::vector<std::vector<pcl::PointCloud<pcl::PointXYZL> > > datapacket_clouds,
                              const std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > &quaternions,
                              const std::string path)
 {
@@ -45,7 +45,7 @@ combine_datapackets_to_scans(std::vector<std::vector<pcl::PointCloud<pcl::PointX
     for (std::size_t i = 0; i < datapacket_clouds.size(); ++i) {
         // Make transformation matrices from quaternions
         std::vector<Eigen::Matrix4d, Eigen::aligned_allocator<Eigen::Matrix4d> > transformation_matrices = make_transformation_matrices(quaternions_scans[i]);
-        pcl::PointCloud<pcl::PointXYZ>::Ptr datapackets_combined(new pcl::PointCloud<pcl::PointXYZ>);
+        pcl::PointCloud<pcl::PointXYZL>::Ptr datapackets_combined(new pcl::PointCloud<pcl::PointXYZL>);
         for (std::size_t j = 0; j < datapacket_clouds[i].size(); ++j) {
             pcl::transformPointCloud(datapacket_clouds[i][j], datapacket_clouds[i][j], transformation_matrices[j]);
             *datapackets_combined += datapacket_clouds[i][j];
@@ -60,13 +60,13 @@ combine_datapackets_to_scans(std::vector<std::vector<pcl::PointCloud<pcl::PointX
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void
-combine_datapackets_to_fragment(std::vector<std::vector<pcl::PointCloud<pcl::PointXYZ> > > datapacket_clouds,
+combine_datapackets_to_fragment(std::vector<std::vector<pcl::PointCloud<pcl::PointXYZL> > > datapacket_clouds,
                                 const std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > &quaternions,
                                 const std::string path)
 {
     const std::vector<std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d>>>
         quaternions_scans = quaternions_scan_assignment(quaternions, datapacket_clouds);
-    pcl::PointCloud<pcl::PointXYZ>::Ptr datapackets_combined(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PointCloud<pcl::PointXYZL>::Ptr datapackets_combined(new pcl::PointCloud<pcl::PointXYZL>);
     std::vector<Eigen::Matrix4d, Eigen::aligned_allocator<Eigen::Matrix4d> > transformation_matrices;
     for (std::size_t i = 0; i < datapacket_clouds.size(); ++i) {
         // Make transformation matrices from quaternions
@@ -83,8 +83,8 @@ combine_datapackets_to_fragment(std::vector<std::vector<pcl::PointCloud<pcl::Poi
     // Visualize fragment
     pcl::visualization::PCLVisualizer viz;
     viz.setBackgroundColor(255, 255, 255);
-    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> cloud_color(datapackets_combined, 0, 255, 0);
-    viz.addPointCloud<pcl::PointXYZ>(datapackets_combined, cloud_color, "cloud 1");
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZL> cloud_color(datapackets_combined, 0, 255, 0);
+    viz.addPointCloud<pcl::PointXYZL>(datapackets_combined, cloud_color, "cloud 1");
     viz.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 0.5, "cloud 1");
     while (!viz.wasStopped ())
     {
