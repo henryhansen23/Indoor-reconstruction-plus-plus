@@ -17,10 +17,6 @@ interpolate_quaternions( vector4d_t& interpolated_quaternions,
 {
     quart_vector_t interpolated_quaternions_time;
     vector4d_t equal_quaternions;
-std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d>>
-interpolate_quaternions(const std::vector<std::pair<Eigen::Vector4d, double>, Eigen::aligned_allocator<std::pair<Eigen::Vector4d, double>> > &quaternions_time) {
-    std::vector<std::pair<Eigen::Vector4d, double>, Eigen::aligned_allocator<std::pair<Eigen::Vector4d, double>>> interpolated_quaternions_time;
-    std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d>> equal_quaternions;
     std::vector<double> timestamp;
     Eigen::Vector4d previous_quaternion{1000, 1000, 1000, 1000};  // initialization of variable
     Eigen::Vector4d a, b, q, diff_quat;
@@ -82,34 +78,17 @@ interpolate_quaternions(const std::vector<std::pair<Eigen::Vector4d, double>, Ei
 
     // Appending the last quaternions if they are all equal
     if (!equal_quaternions.empty()) {
-
-
         for (std::size_t i = 0; i < equal_quaternions.size(); ++i) {
-
             interpolated_quaternions_time.first .push_back( equal_quaternions[i] );
             interpolated_quaternions_time.second.push_back( timestamp[i] );
-
         }
-
-
     }
-
 
     // Remove time
-
-
     interpolated_quaternions.resize( interpolated_quaternions_time.first.size() );
-
     for (std::size_t i = 0; i < interpolated_quaternions_time.first.size(); ++i) {
-
         interpolated_quaternions[i] = interpolated_quaternions_time.first[i];
-
-
     }
-
-
 }
-
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
