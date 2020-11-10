@@ -39,6 +39,9 @@ double clamp(double v)
     return t > 1.0 ? 1.0 : t;
 }
 
+const std::vector<float> vertical_correction = { 11.2, -0.7, 9.7, -2.2, 8.1, -3.7, 6.6, -5.1, 5.1, -6.6, 3.7, -8.1, 2.2, -9.7, 0.7, -11.2 };
+
+
 void print_help (const char* prog_name)
 {
      std::cout << "\n\nUsage: "<<prog_name<<" [options]\n\n"
@@ -50,6 +53,7 @@ void print_help (const char* prog_name)
                << "-o <int>       or: specify odometry number\n"
                << "-start <int>   Specify field of view start degree [0-359]\n"
                << "-end <int>     Specify field of view end degree [0-359]\n"
+               << "-c             Apply vertical correction\n"
                << "\n\n";
 }
 
@@ -73,9 +77,11 @@ int main( int argc, const char *const *argv )
     std::ofstream imu_data;
     std::string fragment;
     std::string odometry;
+    int laser_num;
     int fov_start;
     int fov_end;
     bool write_pcd;
+    bool apply_correction;
     std::vector <std::string> pcds;
 
     // Command line arguments
@@ -85,12 +91,15 @@ int main( int argc, const char *const *argv )
     char opt_s[] = "-start";
     char opt_e[] = "-end";
     char opt_h[] = "-h";
+    char opt_c[] = "-c";
 
     pcl::console::parse_argument(argc, (char**)argv, opt_d, directory);
     pcl::console::parse_argument(argc, (char**)argv, opt_f, fragment);
     pcl::console::parse_argument(argc, (char**)argv, opt_o, odometry);
     pcl::console::parse_argument(argc, (char**)argv, opt_s, fov_start);
     pcl::console::parse_argument(argc, (char**)argv, opt_e, fov_end);
+    pcl::console::parse_argument(argc, (char**)argv, opt_c, apply_correction);
+
 
     // Check correct command line arguments
     if (pcl::console::find_switch(argc, (char**)argv, opt_h)) {
@@ -140,13 +149,13 @@ int main( int argc, const char *const *argv )
 
     // Setting correct fragment path
     if (pcl::console::find_switch(argc, (char**)argv, "-f")) {
-        path = "../../build/" + directory + "/fragments/fragment_" + fragment + "/";
+        path = "../../pcds/" + directory + "/fragments/fragment_" + fragment + "/";
         std::cout << "Writing to: fragment_" + fragment << "\n\n";
     }
 
     // Setting correct odometry path
     else if (pcl::console::find_switch(argc, (char**)argv, "-o")) {
-        path = "../../build/" + directory + "/odometry/odometry_" + odometry + "/";
+        path = "../../pcds/" + directory + "/odometry/odometry_" + odometry + "/";
         std::cout << "Writing to: odometry_" + odometry << "\n\n";
     }
 
@@ -166,7 +175,7 @@ int main( int argc, const char *const *argv )
     imu_data.close();
 
     // Initialize pcl point cloud with point type -> used for pcd file
-    pcl::PointCloud<pcl::PointXYZRGB> cloud;
+    pcl::PointCloud<pcl::PointXYZRGBL> cloud;
 
     // Initialize some loop variables
     int number = 0; // Counter for number of pcds in one 360 degree frame
@@ -265,7 +274,13 @@ int main( int argc, const char *const *argv )
             // Points for PCD file
             cloud.points[j].x = x / 100; // converting to meters
             cloud.points[j].y = y / 100; // converting to meters
-            cloud.points[j].z = z / 100; // converting to meters
+            if (apply_correction)
+            {
+                cloud.points[j].z = (z + (vertical_correction[laser.id] / 10)) / 100; // converting to meters
+            } else
+            {
+                cloud.points[j].z = z / 100; // converting to meters
+            }
 
             // Color mapping: intensity -> rgb
             double v = -1 + double(intensity) / 75;
@@ -291,6 +306,9 @@ int main( int argc, const char *const *argv )
 
             // adding rgb float to point cloud
             cloud.points[j].rgb = rgb;
+
+            // adding the laser vertical component to the point label
+            cloud.points[j].label = laser.vertical;
 
             // Increment counter
             j++;

@@ -68,19 +68,19 @@ load_fragments(const std::string fragments_path, const int fragments_number)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::vector<pcl::PointCloud<pcl::PointXYZ> >
+std::vector<pcl::PointCloud<pcl::PointXYZL> >
 load_datapackets_in_one_scan(const int scan_number, const std::string datapackets_path)
 {
     constexpr int pos_scan_number = 5;
     path p(datapackets_path);
-    std::vector<pcl::PointCloud<pcl::PointXYZ> > clouds;
+    std::vector<pcl::PointCloud<pcl::PointXYZL> > clouds;
     for (auto i = directory_iterator(p); i != directory_iterator(); ++i) {
         std::string file = i->path().filename().string();
         if (file == ".DS_Store") { continue; } // If Apple
         std::string scan_file_number = file.substr(pos_scan_number, file.find("_", pos_scan_number) - pos_scan_number);
         if (scan_number == std::stoi(scan_file_number)) {
-            pcl::PointCloud<pcl::PointXYZ> cloud;
-            pcl::io::loadPCDFile<pcl::PointXYZ>(datapackets_path + "/" + file, cloud);
+            pcl::PointCloud<pcl::PointXYZL> cloud;
+            pcl::io::loadPCDFile<pcl::PointXYZL>(datapackets_path + "/" + file, cloud);
             clouds.push_back(cloud);
         }
     }
@@ -88,11 +88,11 @@ load_datapackets_in_one_scan(const int scan_number, const std::string datapacket
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::vector<std::vector<pcl::PointCloud<pcl::PointXYZ>>>
+std::vector<std::vector<pcl::PointCloud<pcl::PointXYZL>>>
 load_datapackets(const std::string path)
 {
-    std::vector<std::vector<pcl::PointCloud<pcl::PointXYZ> > > fragment_clouds;
-    std::vector<pcl::PointCloud<pcl::PointXYZ> > datapackets_scan_clouds;
+    std::vector<std::vector<pcl::PointCloud<pcl::PointXYZL> > > fragment_clouds;
+    std::vector<pcl::PointCloud<pcl::PointXYZL> > datapackets_scan_clouds;
     int n_scans = number_of_scans(path);
     for (int i = 0; i < n_scans; ++i) {
         datapackets_scan_clouds = load_datapackets_in_one_scan(i, path);
@@ -102,7 +102,7 @@ load_datapackets(const std::string path)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void read_quaternions_file( quart_vector_t& quaternions, const std::string path)
+void read_quaternions_file(quart_vector_t& quaternions, const std::string path)
 {
     std::ifstream input(path + "/" + "quaternions_datapacket.csv");
     const std::string delimiter = ",";
@@ -124,8 +124,8 @@ void read_quaternions_file( quart_vector_t& quaternions, const std::string path)
             quat(j) = row[j];
         }
         double time = row[4];
-        quaternions.first .push_back( quat );
-        quaternions.second.push_back( time );
+        quaternions.first .push_back(quat);
+        quaternions.second.push_back(time);
     }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////

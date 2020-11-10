@@ -41,3 +41,11 @@ build/
 
 # CLion project files
 .idea
+cmake-build-debug/
+cmake-build-release/
+
+# Directory for point clouds
+pcds
+
+# Jupyter cache
+.ipynb_checkpoints
