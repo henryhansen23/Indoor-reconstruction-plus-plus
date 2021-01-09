@@ -1,5 +1,6 @@
 #include <utility>
 #include <vector>
+#include <iostream>
 
 #if defined __GNUC__ || defined __APPLE__
 #include <Eigen/Dense>
@@ -19,6 +20,7 @@ interpolate_quaternions( vector4d_t& interpolated_quaternions,
     std::vector<double> timestamp;
     Eigen::Vector4d previous_quaternion{1000, 1000, 1000, 1000};  // initialization of variable
     Eigen::Vector4d a, b, q, diff_quat;
+
     double diff_time, previous_time = 0;
     for (std::size_t i = 0; i < quaternions_time.first.size(); ++i) {
         if (previous_quaternion.isApprox(quaternions_time.first[i])) {
@@ -76,34 +78,17 @@ interpolate_quaternions( vector4d_t& interpolated_quaternions,
 
     // Appending the last quaternions if they are all equal
     if (!equal_quaternions.empty()) {
-
-
         for (std::size_t i = 0; i < equal_quaternions.size(); ++i) {
-
             interpolated_quaternions_time.first .push_back( equal_quaternions[i] );
             interpolated_quaternions_time.second.push_back( timestamp[i] );
-
         }
-
-
     }
-
 
     // Remove time
-
-
     interpolated_quaternions.resize( interpolated_quaternions_time.first.size() );
-
     for (std::size_t i = 0; i < interpolated_quaternions_time.first.size(); ++i) {
-
         interpolated_quaternions[i] = interpolated_quaternions_time.first[i];
-
-
     }
-
-
 }
-
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -23,7 +23,10 @@ add_executable(reconstruct reconstruction++.cpp
                            src/registration_estimation.cpp
 			   src/cmdline.cpp)
 
+add_executable(get_plane_distances src/get_plane_distances.cpp)
+
 target_link_libraries(reconstruct ${PCL_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(get_plane_distances ${PCL_LIBRARIES} ${Boost_LIBRARIES})
 
 add_subdirectory(interpolation_data_collection)
 

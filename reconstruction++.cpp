@@ -22,6 +22,7 @@
 #include "cmdline.h"
 
 typedef pcl::PointCloud<pcl::PointXYZ> point_cloud;
+typedef pcl::PointCloud<pcl::PointXYZL> point_cloud_w_labels;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -42,23 +43,31 @@ main(int argc, char **argv)
         std::cout << i << std::endl;
         std::string fragment = "fragment_" + std::to_string(i);
 
-        // Read quaternions 
+        // Read quaternions
+        std::cout << "Reading quaternions file..."<< std::flush;
         quart_vector_t quaternions_time;
         read_quaternions_file( quaternions_time,
                                data_dir + "/fragments/" + fragment + "/quaternions" );
+        std::cout << "Done." << std::endl;
 
-        // Interpolate quaternions 
+        // Interpolate quaternions
+        std::cout << "Interpolating quaternions..."<< std::flush;
         vector4d_t interpolated_quaternions;
         interpolate_quaternions( interpolated_quaternions, quaternions_time );
+        std::cout << "Done." << std::endl;
 
-        // Load datapackets 
-        std::vector<std::vector<point_cloud> >
+        // Load datapackets
+        std::cout << "Loading datapackets..."<< std::endl;
+        std::vector<std::vector<point_cloud_w_labels> >
             datapackets_clouds = load_datapackets(data_dir + "/fragments/" + fragment + "/datapackets");
+        std::cout << "Done." << std::endl;
 
         // Combine datapackets to fragment
+        std::cout << "Combining datapackets to fragment..."<< std::flush;
         combine_datapackets_to_fragment(datapackets_clouds,
                                         interpolated_quaternions,
                                         data_dir + "/fragments/" + fragment);
+        std::cout << "Done." << std::endl;
     }
 
     std::cout << std::endl << std::endl;
@@ -73,27 +82,37 @@ main(int argc, char **argv)
             std::string odometry = "odometry_" + std::to_string(i);
 
             // Read quaternions
+            std::cout << "Reading quaternions file..."<< std::flush;
             quart_vector_t quaternions_time;
             read_quaternions_file( quaternions_time,
                                    data_dir + "/odometry/" + odometry + "/quaternions" );
+            std::cout << "Done." << std::endl;
 
             // Interpolate quaternions
+            std::cout << "Interpolating quaternions..."<< std::flush;
             vector4d_t interpolated_quaternions;
             interpolate_quaternions( interpolated_quaternions, quaternions_time );
+            std::cout << "Done." << std::endl;
 
             // Load datapackets
-            std::vector<std::vector<point_cloud> >
+            std::cout << "Loading datapackets..."<< std::endl;
+            std::vector<std::vector<point_cloud_w_labels> >
                 datapacket_clouds = load_datapackets(data_dir + "/odometry/" + odometry + "/datapackets");
+            std::cout << "Done." << std::endl;
 
             // Combine datapackets to scans
+            std::cout << "Combining datapackets to scans..."<< std::flush;
             combine_datapackets_to_scans(datapacket_clouds,
                                          interpolated_quaternions,
                                          data_dir + "/odometry/" + odometry);
+            std::cout << "Done." << std::endl;
 
             // Estimate translation
+            std::cout << "Estimating translation..."<< std::flush;
             Eigen::Vector3f translation{0, 0, 0};
             translation_estimation(data_dir + "/odometry/" + odometry + "/scans", translation);
             translations.push_back(translation);
+            std::cout << "Done." << std::endl;
         }
         std::cout << std::endl << std::endl;
 
