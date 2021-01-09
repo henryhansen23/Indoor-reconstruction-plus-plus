@@ -62,7 +62,8 @@ int main(int argc, char **argv)
     for( auto it = cloud->begin(); it != cloud->end(); it++ )
     {
         const pcl::PointXYZ& point = *it;
-        ostr << point.x << " " << point.y << " " << point.z
+        ostr << "POINTWITHSTAT "
+             << point.x << " " << point.y << " " << point.z
              << " 1 0 0"
              << " 1 0 0 0"
              << " 0 1 0 0"
