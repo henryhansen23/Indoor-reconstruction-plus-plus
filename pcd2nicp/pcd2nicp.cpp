@@ -57,17 +57,17 @@ int main(int argc, char **argv)
 
     ostr << "NICPCLOUD " << cloud->size() << " 0" << endl;
 
-    ostr << "0 0 0 0 0 0" << endl;
+    ostr << "0 0 0 0 0 0 " << endl;
 
     for( auto it = cloud->begin(); it != cloud->end(); it++ )
     {
         const pcl::PointXYZ& point = *it;
-        ostr << "POINTWITHSTAT "
+        ostr << "POINTWITHSTATS "
              << point.x << " " << point.y << " " << point.z
-             << " 1 0 0"
-             << " 1 0 0 0"
-             << " 0 1 0 0"
-             << " 0 0 1 0"
+             << " 1 0 0" // normal
+             << " 1 1 0 0"
+             << " 1 0 1 0"
+             << " 1 0 0 1"
              << " 0 0 0 1" << endl;
     }
 

@@ -44,14 +44,56 @@ bool readFirstline( istream& istr, size_t& numpoints )
     return true;
 }
 
+bool readSecondLine( istream& istr, int* transform )
+{
+    char buf[1024];
+    istr.getline( buf, 1024 );
+
+    istringstream rstr( buf );
+
+    rstr >> transform[0] >> transform[1] >> transform[2] >> transform[3] >> transform[4] >> transform[5];
+
+    cerr << "Transform line contains "
+         << transform[0] << " " << transform[1] << " " << transform[2] << " "
+         << transform[3] << " " << transform[4] << " " << transform[1] << endl;
+
+    return true;
+}
+
+void usage( const char* name )
+{
+    cerr << "Usage: " << name << " [options] <binary-in>.nicp <ascii-out>.nicp" << endl
+         << endl
+         << "       Takes a binary input file in NICP format and converts it" << endl
+         << "       to a NICP file in text format." << endl
+         << "options:" << endl
+         << "       -b - output as binary NICP file" << endl
+         << endl;
+    exit(-1);
+}
+
 int main(int argc, char **argv)
 {
+    const char* progname      = argv[0];
+    bool        binary_output = false;
+
+    if( argc == 4 )
+    {
+        if( string(argv[1]) == "-b" )
+        {
+            argc--;
+            argv++;
+            binary_output = true;
+        }
+        else
+        {
+            usage( progname );
+        }
+    }
+
     if (argc != 3)
     {
-        cerr << "Usage: " << argv[0] << " <binary-in>.nicp <ascii-out>.nicp" << endl
-             << "       Takes a binary input file in NICP format and converts it" << endl
-             << "       to a NICP file in text format." << endl;
-        return -1;
+        usage( progname );
     }
 
     string infile_name( argv[1] );
@@ -80,24 +122,28 @@ int main(int argc, char **argv)
     }
     cerr << "Input file contains " << numPoints << " samples." << endl;
 
-    ostr << "NICPCLOUD " << numPoints << " 0" << endl;
+    if( binary_output )
+        ostr << "NICPCLOUD " << numPoints << " 1" << endl;
+    else
+        ostr << "NICPCLOUD " << numPoints << " 0" << endl;
 
     int transform[6];
-    istr >> transform[0] >> transform[1] >> transform[2] >> transform[3] >> transform[4] >> transform[1];
 
-    cerr << "Transform line contains "
-         << transform[0] << " " << transform[1] << " " << transform[2] << " "
-         << transform[3] << " " << transform[4] << " " << transform[1] << endl;
+    if( ! readSecondLine( istr, transform ) )
+    {
+        return -1;
+    }
 
     ostr << transform[0] << " " << transform[1] << " " << transform[2] << " "
-         << transform[3] << " " << transform[4] << " " << transform[1] << endl;
+         << transform[3] << " " << transform[4] << " " << transform[1] << " "
+         << endl;
 
     cerr << "Reading " << numPoints << " points." << endl;
 
     for( size_t i=0; i<numPoints; i++ )
     {
-        float values[3+3+16];
-        const size_t sz = (3+3+16)*sizeof(float);
+        float values[4+4+24];
+        const size_t sz = (4+4+24)*sizeof(float);
         istr.read( (char*)values, sz );
         if( !istr.good() )
         {
@@ -105,14 +151,37 @@ int main(int argc, char **argv)
             break;
         }
 
-        ostr << "POINTWITHSTATS";
-        for( int j=0; j<3+3+16; j++ )
+        if( binary_output )
         {
-            float v = values[j];
-            if( std::abs(v) < 0.000001 ) v = 0;
-            ostr << " " << setprecision(3) << v;
+            ostr.write( (char*)values, sz );
         }
-        ostr << endl;
+        else
+        {
+            ostr << "POINTWITHSTATS";
+            for( int j=0; j<3; j++ )
+            {
+                float v = values[j];
+                if( std::abs(v) < 0.000001 ) v = 0;
+                ostr << " " << setprecision(3) << v;
+            }
+            for( int j=0; j<3; j++ )
+            {
+                float v = values[4+j];
+                if( std::abs(v) < 0.000001 ) v = 0;
+                ostr << " " << setprecision(3) << v;
+            }
+            for( int r=0; r<4; r++ )
+            {
+                for( int c=0; c<4; c++ )
+                {
+                    float v = values[8+r+c*4];
+                    if( std::abs(v) < 0.000001 ) v = 0;
+                    ostr << " " << setprecision(3) << v;
+                }
+            }
+
+            ostr << endl;
+        }
     }
     if( istr.good() )
     {
