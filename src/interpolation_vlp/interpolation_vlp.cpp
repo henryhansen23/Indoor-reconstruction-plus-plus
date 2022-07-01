@@ -45,16 +45,27 @@ const std::vector<float> vertical_correction = { 11.2, -0.7, 9.7, -2.2, 8.1, -3.
 void print_help (const char* prog_name)
 {
      std::cout << "\n\nUsage: "<<prog_name<<" [options]\n\n"
-               << "Options:\n"
-               << "-----------------------------------------------------------\n"
-               << "-h             This help message\n"
-               << "-d <dir_name>  Directory name of where to save the pcds\n"
-               << "-f <int>       Specify fragment number\n"
-               << "-o <int>       or: specify odometry number\n"
-               << "-start <int>   Specify field of view start degree [0-359]\n"
-               << "-end <int>     Specify field of view end degree [0-359]\n"
-               << "-c             Apply vertical correction\n"
-               << "\n\n";
+                  "This program uses only the VLP-16 Lidar and the Tinkerforge IMU 2.0 to record\n"
+                  "pointcloud data. The Lidar data and IMU data are not synchronized, that would\n"
+                  "require the addition of a common time source as documented in the VLP-16 docs.\n\n"
+                  "Options:\n"
+                  "-------------------------------------------------------------------------------\n"
+                  "-h             This help message\n"
+                  "-d <dir_name>  Directory name of where to save the pcds\n"
+                  "-f <int>       Specify fragment number\n"
+                  "-o <int>       or: specify odometry number\n"
+                  "-start <int>   Specify field of view start degree [0-359]\n"
+                  "-end <int>     Specify field of view end degree [0-359]\n"
+                  "-c             Apply vertical correction\n"
+                  "-------------------------------------------------------------------------------\n"
+                  "\n"
+                  "-o : Use this if you move with the VLP-16 while recording\n"
+                  "-f : Use this if you stand still and use the tripod sweep\n"
+                  "     -o and -f are mutually exclusive.\n"
+                  "-start and -end restrict the recording angle. That allows you to prevent\n"
+                  "                you from recording yourself.\n"
+                  "-d :  creates the base directory where the recorded PCD files are stored.\n"
+                  "\n\n";
 }
 
 
@@ -100,6 +111,10 @@ int main( int argc, const char *const *argv )
     pcl::console::parse_argument(argc, (char**)argv, opt_e, fov_end);
     pcl::console::parse_argument(argc, (char**)argv, opt_c, apply_correction);
 
+    if(argc==1) {
+        print_help(argv[0]);
+        return 0;
+    }
 
     // Check correct command line arguments
     if (pcl::console::find_switch(argc, (char**)argv, opt_h)) {
@@ -160,6 +175,7 @@ int main( int argc, const char *const *argv )
     }
 
     // Create directories in path
+    cout << "Creating the path " << path << endl;
     boost::filesystem::create_directories(path);
 
     // Open and write header to quaternion csv file
