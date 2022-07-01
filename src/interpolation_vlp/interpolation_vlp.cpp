@@ -2,6 +2,9 @@
 #include <vector>
 #include <fstream>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <ifaddrs.h> // for getifaddrs
+#include <netinet/in.h> // for sockaddr_in
 
 // VelodyneCapture
 #include "VelodyneCapture.h"
@@ -26,6 +29,9 @@
 #define UID "64tUkb" // Change XXYYZZ to the UID of your IMU Brick 2.0
 #define PI 3.14159265359
 
+#define VLP_ADDRESS "192.168.1.201"
+#define VLP_PORT    2368
+
 volatile sig_atomic_t interrupted = false;
 
 void signal_handler(int s)
@@ -42,32 +48,9 @@ double clamp(double v)
 const std::vector<float> vertical_correction = { 11.2, -0.7, 9.7, -2.2, 8.1, -3.7, 6.6, -5.1, 5.1, -6.6, 3.7, -8.1, 2.2, -9.7, 0.7, -11.2 };
 
 
-void print_help (const char* prog_name)
-{
-     std::cout << "\n\nUsage: "<<prog_name<<" [options]\n\n"
-                  "This program uses only the VLP-16 Lidar and the Tinkerforge IMU 2.0 to record\n"
-                  "pointcloud data. The Lidar data and IMU data are not synchronized, that would\n"
-                  "require the addition of a common time source as documented in the VLP-16 docs.\n\n"
-                  "Options:\n"
-                  "-------------------------------------------------------------------------------\n"
-                  "-h             This help message\n"
-                  "-d <dir_name>  Directory name of where to save the pcds\n"
-                  "-f <int>       Specify fragment number\n"
-                  "-o <int>       or: specify odometry number\n"
-                  "-start <int>   Specify field of view start degree [0-359]\n"
-                  "-end <int>     Specify field of view end degree [0-359]\n"
-                  "-c             Apply vertical correction\n"
-                  "-------------------------------------------------------------------------------\n"
-                  "\n"
-                  "-o : Use this if you move with the VLP-16 while recording\n"
-                  "-f : Use this if you stand still and use the tripod sweep\n"
-                  "     -o and -f are mutually exclusive.\n"
-                  "-start and -end restrict the recording angle. That allows you to prevent\n"
-                  "                you from recording yourself.\n"
-                  "-d :  creates the base directory where the recorded PCD files are stored.\n"
-                  "\n\n";
-}
+static void usage( const char* prog_name );
 
+static bool validate_interface( const char* address );
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////// Main ///////////////////////////////////////////////
@@ -112,13 +95,13 @@ int main( int argc, const char *const *argv )
     pcl::console::parse_argument(argc, (char**)argv, opt_c, apply_correction);
 
     if(argc==1) {
-        print_help(argv[0]);
+        usage(argv[0]);
         return 0;
     }
 
     // Check correct command line arguments
     if (pcl::console::find_switch(argc, (char**)argv, opt_h)) {
-        print_help(argv[0]);
+        usage(argv[0]);
         return 0;
     }
 
@@ -140,6 +123,12 @@ int main( int argc, const char *const *argv )
     if (fov_end < 0 or fov_end > 359) {
         cout << "\033[1;31mSpecify correct field of view end degrees (range: 0 -> 359)\033[0m\n";
         return 0;
+    }
+
+    if( validate_interface( VLP_ADDRESS ) == false )
+    {
+        cerr << "This computer has no network interface configured for reception from the VLP-16" << endl;
+        return 1;
     }
 
 // ------------------------------------
@@ -204,14 +193,14 @@ int main( int argc, const char *const *argv )
     // ----------------------------------------------------------------
 
     // Connect to ipadress and port
-    const boost::asio::ip::address ipaddress = boost::asio::ip::address::from_string("192.168.1.201");
-    const unsigned short port = 2368;
+    const boost::asio::ip::address ipaddress = boost::asio::ip::address::from_string( VLP_ADDRESS );
+    const unsigned short port = VLP_PORT;
     velodyne::VLP16Capture capture(ipaddress, port);
 
     // Check if capture is open
     if (!capture.isOpen()) {
         std::cerr << "Can't open VelodyneCapture." << std::endl;
-        print_help(argv[0]);
+        usage(argv[0]);
         return -1;
     }
     
@@ -227,7 +216,11 @@ int main( int argc, const char *const *argv )
     // ---- Main loop ----
     //--------------------
 
+    int ct = 1000;
     while (capture.isRun() && !interrupted) {
+        ct--;
+        if( ct<0 ) { cerr << "."; ct = 1000; }
+
         // Initialize lasers with velodyne data
         std::vector <velodyne::Laser> lasers;
         capture >> lasers;
@@ -351,7 +344,7 @@ int main( int argc, const char *const *argv )
             }
 
             // Write quaternion data to csv file
-            quaternion.open(path + "quaternions/quaternions_datapacket.csv", std::ios_base::app);
+            quaternion.open(path + "/quaternions/quaternions_datapacket.csv", std::ios_base::app);
             quaternion << q_w / 16383.0 << "," << q_x / 16383.0 << "," << q_y / 16383.0 << "," << q_z / 16383.0
                       << "," << timestamp << "," << frame_count <<"\n";
             quaternion.close();
@@ -380,3 +373,69 @@ int main( int argc, const char *const *argv )
     ipcon_destroy(&ipcon); // Calls ipcon_disconnect internally
     return 0;
 }
+
+static void usage( const char* prog_name )
+{
+     std::cout << "\n\nUsage: "<<prog_name<<" [options]\n\n"
+                  "This program uses only the VLP-16 Lidar and the Tinkerforge IMU 2.0 to record\n"
+                  "pointcloud data. The Lidar data and IMU data are not synchronized, that would\n"
+                  "require the addition of a common time source as documented in the VLP-16 docs.\n\n"
+                  "Options:\n"
+                  "-------------------------------------------------------------------------------\n"
+                  "-h             This help message\n"
+                  "-d <dir_name>  Directory name of where to save the pcds\n"
+                  "-f <int>       Specify fragment number\n"
+                  "-o <int>       or: specify odometry number\n"
+                  "-start <int>   Specify field of view start degree [0-359]\n"
+                  "-end <int>     Specify field of view end degree [0-359]\n"
+                  "-c             Apply vertical correction\n"
+                  "-------------------------------------------------------------------------------\n"
+                  "\n"
+                  "-o : Use this if you move with the VLP-16 while recording\n"
+                  "-f : Use this if you stand still and use the tripod sweep\n"
+                  "     -o and -f are mutually exclusive.\n"
+                  "-start and -end restrict the recording angle. That allows you to prevent\n"
+                  "                you from recording yourself.\n"
+                  "-d :  creates the base directory where the recorded PCD files are stored.\n"
+                  "\n\n";
+}
+
+static bool validate_interface( const char* address )
+{
+    struct in_addr vlp_addr;
+    int err = inet_pton( AF_INET, address, &vlp_addr );
+    if( err == 0 )
+    {
+        perror( "No valid IPv4 address for VLP given. " );
+        return false;
+    }
+
+    struct ifaddrs *ifap;
+    err = getifaddrs( &ifap );
+    if( err != 0 )
+    {
+        perror( "Cannot get list of network interfaces. " );
+        return false;
+    }
+
+    for( struct ifaddrs* it = ifap; it != nullptr; it=it->ifa_next )
+    {
+        if( it->ifa_addr->sa_family != AF_INET ) continue;
+
+        uint32_t net;
+        net  = ((struct sockaddr_in*)it->ifa_addr   )->sin_addr.s_addr;
+        net &= ((struct sockaddr_in*)it->ifa_netmask)->sin_addr.s_addr;
+
+        if( ( net & vlp_addr.s_addr ) == net )
+        {
+            cout << "Found a good network interface " << it->ifa_name << endl;
+            freeifaddrs ( ifap );
+            return true;
+        }
+    }
+    cout << "No good network interface for talking to " << VLP_ADDRESS << " found." << endl
+         << "Check your network." << endl;
+    freeifaddrs ( ifap );
+    return false;
+}
+
