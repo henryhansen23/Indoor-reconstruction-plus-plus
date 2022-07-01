@@ -1,5 +1,6 @@
-
 cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+
+cmake_policy(SET CMP0074 NEW) # search packages based on find_package pkg_ROOT hints AND pkg_ROOT env variables
 
 project(interpolation_vlp)
 
