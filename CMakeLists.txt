@@ -10,16 +10,9 @@ find_package(PCL 1.5 REQUIRED)
 
 find_package(Boost 1.53.0 REQUIRED COMPONENTS filesystem program_options)
 
-include_directories(include/)
-
-include_directories(${PCL_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
-link_directories(${PCL_LIBRARY_DIRS})
-add_definitions(${PCL_DEFINITIONS})
-
-add_subdirectory(reconstruct)
-
-add_subdirectory(interpolation_data_collection)
+add_subdirectory(src/reconstruct)
+add_subdirectory(src/interpolation_vlp)
 
 add_subdirectory(pcd2nicp)
-add_subdirectory(plane_distances)
+add_subdirectory(src/plane_distances)
 

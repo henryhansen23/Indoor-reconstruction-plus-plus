@@ -60,3 +60,9 @@ target_link_directories(interpolation_vlp
 target_link_libraries(interpolation_vlp ${CMAKE_THREAD_LIBS_INIT}
                                         ${Boost_LIBRARIES}
                                         ${PCL_LIBRARIES})
+
+set_target_properties(interpolation_vlp
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+)
+
