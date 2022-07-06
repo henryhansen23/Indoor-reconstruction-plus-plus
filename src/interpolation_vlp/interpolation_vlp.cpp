@@ -23,6 +23,8 @@
 #include "Tinkerforge_IMU2.0/ip_connection.h"
 #include "Tinkerforge_IMU2.0/brick_imu_v2.h"
 
+#include "cmdline.hpp"
+
 
 #define HOST "localhost"
 #define PORT 4223
@@ -39,16 +41,15 @@ void signal_handler(int s)
     interrupted = true;
 }
 
-double clamp(double v)
+inline double clamp(double v)
 {
-    const double t = v < 0 ? 0 : v;
-    return t > 1.0 ? 1.0 : t;
+    // const double t = v < 0 ? 0 : v;
+    // return t > 1.0 ? 1.0 : t;
+    return std::min( std::max( v, 0.0 ), 1.0 );
 }
 
 const std::vector<float> vertical_correction = { 11.2, -0.7, 9.7, -2.2, 8.1, -3.7, 6.6, -5.1, 5.1, -6.6, 3.7, -8.1, 2.2, -9.7, 0.7, -11.2 };
 
-
-static void usage( const char* prog_name );
 
 static bool validate_interface( const char* address );
 
@@ -57,7 +58,7 @@ static bool validate_interface( const char* address );
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 
-int main( int argc, const char *const *argv )
+int main( int argc, char **argv )
 {
     signal(SIGINT, signal_handler);
 
@@ -65,65 +66,19 @@ int main( int argc, const char *const *argv )
     // ------ COMMAND-LINE ARGUMENT PARSING ------
     // -------------------------------------------
 
-    std::string directory;
-    std::string path;
-    std::ofstream quaternion;
-    std::ofstream imu_data;
-    std::string fragment;
-    std::string odometry;
+    Parameters params;
+
+    parseargs( argc, argv, params );
+
+    // std::string directory;
+    // std::string fragment;
+    // std::string odometry;
     int laser_num;
-    int fov_start;
-    int fov_end;
+    // int fov_start;
+    // int fov_end;
     bool write_pcd;
-    bool apply_correction;
+    // bool apply_correction;
     std::vector <std::string> pcds;
-
-    // Command line arguments
-    char opt_d[] = "-d";
-    char opt_f[] = "-f";
-    char opt_o[] = "-o";
-    char opt_s[] = "-start";
-    char opt_e[] = "-end";
-    char opt_h[] = "-h";
-    char opt_c[] = "-c";
-
-    pcl::console::parse_argument(argc, (char**)argv, opt_d, directory);
-    pcl::console::parse_argument(argc, (char**)argv, opt_f, fragment);
-    pcl::console::parse_argument(argc, (char**)argv, opt_o, odometry);
-    pcl::console::parse_argument(argc, (char**)argv, opt_s, fov_start);
-    pcl::console::parse_argument(argc, (char**)argv, opt_e, fov_end);
-    pcl::console::parse_argument(argc, (char**)argv, opt_c, apply_correction);
-
-    if(argc==1) {
-        usage(argv[0]);
-        return 0;
-    }
-
-    // Check correct command line arguments
-    if (pcl::console::find_switch(argc, (char**)argv, opt_h)) {
-        usage(argv[0]);
-        return 0;
-    }
-
-    if (directory.empty()) {
-        cout << "\033[1;31mSpecify directory name\033[0m\n";
-        return 0;
-    }
-
-    if (fragment.empty() and odometry.empty()) {
-        cout << "\033[1;31mSpecify fragment or movement number\033[0m\n";
-        return 0;
-    }
-
-    if (fov_start < 0 or fov_start > 359) {
-        cout << "\033[1;31mSpecify correct field of view start degrees (range: 0 -> 359)\033[0m\n";
-        return 0;
-    }
-
-    if (fov_end < 0 or fov_end > 359) {
-        cout << "\033[1;31mSpecify correct field of view end degrees (range: 0 -> 359)\033[0m\n";
-        return 0;
-    }
 
     if( validate_interface( VLP_ADDRESS ) == false )
     {
@@ -151,16 +106,16 @@ int main( int argc, const char *const *argv )
 
 // -------------------------------------------------
 
-    // Setting correct fragment path
-    if (pcl::console::find_switch(argc, (char**)argv, "-f")) {
-        path = "../../pcds/" + directory + "/fragments/fragment_" + fragment + "/";
-        std::cout << "Writing to: fragment_" + fragment << "\n\n";
+    std::string path;
+    if( params.use_odometry )
+    {
+        path = params.directory + "/odometry/odometry_" + std::to_string(params.odometry_number) + "/";
+        std::cout << "Writing to: odometry_" << params.odometry_number << "\n\n";
     }
-
-    // Setting correct odometry path
-    else if (pcl::console::find_switch(argc, (char**)argv, "-o")) {
-        path = "../../pcds/" + directory + "/odometry/odometry_" + odometry + "/";
-        std::cout << "Writing to: odometry_" + odometry << "\n\n";
+    else
+    {
+        path = params.directory + "/fragments/fragment_" + std::to_string(params.fragment_number) + "/";
+        std::cout << "Writing to: fragment_" << params.fragment_number << "\n\n";
     }
 
     // Create directories in path
@@ -169,12 +124,14 @@ int main( int argc, const char *const *argv )
 
     // Open and write header to quaternion csv file
     boost::filesystem::create_directories(path + "/quaternions");
+    std::ofstream quaternion;
     quaternion.open(path + "/quaternions/quaternions_datapacket.csv");
     quaternion << "q_w,q_x,q_y,q_z,g_x,g_y,g_z,t,c\n";
     quaternion.close();
 
     // Open and write header to imu data csv file
     boost::filesystem::create_directories(path + "/imu");
+    std::ofstream imu_data;
     imu_data.open(path + "/imu/imu_data.csv");
     imu_data << "angv_x,angv_y,angv_z,lina_x,lina_y,lina_z\n";
     imu_data.close();
@@ -185,7 +142,7 @@ int main( int argc, const char *const *argv )
     // Initialize some loop variables
     int number = 0; // Counter for number of pcds in one 360 degree frame
     int frame_count = 0; // Counter for a full 360 degree rotation
-    double azimuth_rotation = fov_end; // Used to check n-1 azimuth rotation
+    double azimuth_rotation = params.fov_end; // Used to check n-1 azimuth rotation
     long timestamp = 0;
 
     // ----------------------------------------------------------------
@@ -200,7 +157,6 @@ int main( int argc, const char *const *argv )
     // Check if capture is open
     if (!capture.isOpen()) {
         std::cerr << "Can't open VelodyneCapture." << std::endl;
-        usage(argv[0]);
         return -1;
     }
     
@@ -219,10 +175,11 @@ int main( int argc, const char *const *argv )
     // ---- Main loop ----
     //--------------------
 
-    int ct = 1000;
-    while (capture.isRun() && !interrupted) {
+    int ct = 100000;
+    while (capture.isRun() && !interrupted)
+    {
         ct--;
-        if( ct<0 ) { cerr << "."; ct = 1000; }
+        if( ct<0 ) { cerr << "."; ct = 100000; }
 
         // Initialize lasers with velodyne data
         std::vector <velodyne::Laser> lasers;
@@ -243,14 +200,15 @@ int main( int argc, const char *const *argv )
         int j = 0;
 
         // Looping over laser by laser (0-15)
-        for (const velodyne::Laser &laser : lasers) {
+        for (const velodyne::Laser &laser : lasers)
+        {
             // Distance, azimuth and vertical of laser
             const auto distance = static_cast<double>( laser.distance );
             const double azimuth = (laser.azimuth * PI) / 180.0;
             const double vertical = (laser.vertical * PI) / 180.0;
 
             // Increments frame count and resets pcd count if azimuth angle exceeds field of view end degrees
-            if (laser.azimuth > fov_end and azimuth_rotation < fov_end){
+            if (laser.azimuth > params.fov_end and azimuth_rotation < params.fov_end){
                 frame_count++;
                 number = 0;
             }
@@ -259,14 +217,14 @@ int main( int argc, const char *const *argv )
             azimuth_rotation = laser.azimuth;
 
             // Check if the points are inside scope (case when fov start is greater than fov end)
-            if (laser.azimuth<fov_start and laser.azimuth>fov_end and fov_start>fov_end){
+            if (laser.azimuth<params.fov_start and laser.azimuth>params.fov_end and params.fov_start>params.fov_end){
                 // Don't write pcds and continue
                 write_pcd = false;
                 continue;
             }
 
             // Check if the points are inside scope (case when fov end is greater than fov start)
-            if ((laser.azimuth<fov_start || laser.azimuth>fov_end) and fov_end>fov_start){
+            if ((laser.azimuth<params.fov_start || laser.azimuth>params.fov_end) and params.fov_end>params.fov_start){
                 // Don't write pcds and continue
                 write_pcd = false;
                 continue;
@@ -286,10 +244,11 @@ int main( int argc, const char *const *argv )
             // Points for PCD file
             cloud.points[j].x = x / 100; // converting to meters
             cloud.points[j].y = y / 100; // converting to meters
-            if (apply_correction)
+            if( params.apply_correction )
             {
                 cloud.points[j].z = (z + (vertical_correction[laser.id] / 10)) / 100; // converting to meters
-            } else
+            }
+            else
             {
                 cloud.points[j].z = z / 100; // converting to meters
             }
@@ -302,10 +261,10 @@ int main( int argc, const char *const *argv )
 
             // making hex string of rgb values
             std::stringstream stream;
-            stream << "0x00";
-            stream << std::setfill ('0') << std::setw(2) << std::hex << int(r*255);
-            stream << std::setfill ('0') << std::setw(2) << std::hex << int(g*255);
-            stream << std::setfill ('0') << std::setw(2) << std::hex << int(b*255);
+            stream << "0x00"
+                   << std::setfill ('0') << std::setw(2) << std::hex << int(r*255)
+                   << std::setfill ('0') << std::setw(2) << std::hex << int(g*255)
+                   << std::setfill ('0') << std::setw(2) << std::hex << int(b*255);
             std::string rgb_hex(stream.str());
 
             // convert hex string to float
@@ -327,7 +286,8 @@ int main( int argc, const char *const *argv )
         }
 
         // If all pcd points are inside scope, then write the pcd
-        if (write_pcd and cloud.size() > 0) {
+        if (write_pcd and cloud.size() > 0)
+        {
             // Setting the filename string
             std::ostringstream filename;
             filename << "scan_" << std::to_string(frame_count) << "_" << std::to_string(number++) + ".pcd";
@@ -389,32 +349,6 @@ int main( int argc, const char *const *argv )
     imu_v2_destroy(&imu);
     ipcon_destroy(&ipcon); // Calls ipcon_disconnect internally
     return 0;
-}
-
-static void usage( const char* prog_name )
-{
-     std::cout << "\n\nUsage: "<<prog_name<<" [options]\n\n"
-                  "This program uses only the VLP-16 Lidar and the Tinkerforge IMU 2.0 to record\n"
-                  "pointcloud data. The Lidar data and IMU data are not synchronized, that would\n"
-                  "require the addition of a common time source as documented in the VLP-16 docs.\n\n"
-                  "Options:\n"
-                  "-------------------------------------------------------------------------------\n"
-                  "-h             This help message\n"
-                  "-d <dir_name>  Directory name of where to save the pcds\n"
-                  "-f <int>       Specify fragment number\n"
-                  "-o <int>       or: specify odometry number\n"
-                  "-start <int>   Specify field of view start degree [0-359]\n"
-                  "-end <int>     Specify field of view end degree [0-359]\n"
-                  "-c             Apply vertical correction\n"
-                  "-------------------------------------------------------------------------------\n"
-                  "\n"
-                  "-o : Use this if you move with the VLP-16 while recording\n"
-                  "-f : Use this if you stand still and use the tripod sweep\n"
-                  "     -o and -f are mutually exclusive.\n"
-                  "-start and -end restrict the recording angle. That allows you to prevent\n"
-                  "                you from recording yourself.\n"
-                  "-d :  creates the base directory where the recorded PCD files are stored.\n"
-                  "\n\n";
 }
 
 static bool validate_interface( const char* address )

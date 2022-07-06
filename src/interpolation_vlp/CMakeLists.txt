@@ -11,7 +11,8 @@ add_executable(interpolation_vlp
                Tinkerforge_IMU2.0/brick_imu_v2.h
                Tinkerforge_IMU2.0/ip_connection.cpp
                Tinkerforge_IMU2.0/ip_connection.h
-               interpolation_vlp.cpp)
+               interpolation_vlp.cpp
+	       cmdline.cpp cmdline.hpp)
 
 # Find package thread
 
@@ -20,7 +21,7 @@ find_package(Threads REQUIRED)
 # Find package boost
 
 set(BOOST_ROOT "/usr/local/Cellar/boost/")
-find_package(Boost COMPONENTS system date_time regex)
+find_package(Boost COMPONENTS program_options)
 
 # If direct capture from sensors, VelodyneCapture are required Boost.Asio.
 
