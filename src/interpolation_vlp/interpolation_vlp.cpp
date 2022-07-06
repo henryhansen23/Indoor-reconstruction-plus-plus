@@ -170,7 +170,7 @@ int main( int argc, const char *const *argv )
     // Open and write header to quaternion csv file
     boost::filesystem::create_directories(path + "/quaternions");
     quaternion.open(path + "/quaternions/quaternions_datapacket.csv");
-    quaternion << "q_w,q_x,q_y,q_z,t,c\n";
+    quaternion << "q_w,q_x,q_y,q_z,g_x,g_y,g_z,t,c\n";
     quaternion.close();
 
     // Open and write header to imu data csv file
@@ -211,6 +211,9 @@ int main( int argc, const char *const *argv )
         std::cout << "port : " << port << std::endl;
         std::cout << "\n\n";
     }
+
+    Eigen::Quaternion<float> startQuaternion;
+    bool startQuaternionSet = false;
 
     //--------------------
     // ---- Main loop ----
@@ -342,11 +345,25 @@ int main( int argc, const char *const *argv )
             if (imu_v2_get_quaternion(&imu, &q_w, &q_x, &q_y, &q_z) < 0) {
               std::cerr << "Could not get quaternion, probably timeout" << "\n";
             }
+            Eigen::Quaternion<float> currentQuaternion(q_w, q_x, q_y, q_z);
+            currentQuaternion.normalize();
+            if (!startQuaternionSet) {
+                startQuaternion = currentQuaternion;
+                startQuaternionSet = true;
+            }
+            currentQuaternion = (startQuaternion.conjugate() * currentQuaternion);
 
-            // Write quaternion data to csv file
+            // Get gravity vector from imu
+            int16_t g_x, g_y, g_z;
+
+            if (imu_v2_get_gravity_vector(&imu, &g_x, &g_y, &g_z) < 0) {
+              std::cerr << "Could not get gravity vector, probably timeout" << "\n";
+            }
+
+            // Write quaternion and gravity data to csv file
             quaternion.open(path + "/quaternions/quaternions_datapacket.csv", std::ios_base::app);
-            quaternion << q_w / 16383.0 << "," << q_x / 16383.0 << "," << q_y / 16383.0 << "," << q_z / 16383.0
-                      << "," << timestamp << "," << frame_count <<"\n";
+            quaternion << currentQuaternion.w() << "," << currentQuaternion.x() << "," << currentQuaternion.y() << "," << currentQuaternion.z()
+                    << "," << g_x << "," << g_y << "," << g_z << "," << timestamp << "," << frame_count <<"\n";
             quaternion.close();
 
             // Get angular velocity from imu
