@@ -37,6 +37,9 @@
 #define VLP_ADDRESS "192.168.1.201"
 #define VLP_PORT    2368
 
+typedef Eigen::Quaternion<float> quat_t;
+        
+
 volatile sig_atomic_t interrupted = false;
 
 void signal_handler(int s)
@@ -141,8 +144,8 @@ int main( int argc, const char *const *argv )
     //--------------------
 
     bool quaternionsInitialized = false;
-    Eigen::Quaternion<float> startQuaternion;
-    Eigen::Quaternion<float> endQuaternion;
+    quat_t startQuaternion;
+    quat_t endQuaternion;
 
     int ct = 1000;
     while (capture.isRun() && !interrupted) {
@@ -156,15 +159,15 @@ int main( int argc, const char *const *argv )
           std::cerr << "Could not get quaternion, probably timeout" << "\n";
         }
 
+        quat_t tempQuaternion ( q_w, q_x, q_y, q_z );
+        tempQuaternion.normalize();
+
         // Get gravity from imu
         int16_t g_x, g_y, g_z;
 
         if (imu_v2_get_gravity_vector(&imu, &g_x, &g_y, &g_z) < 0) {
           std::cerr << "Could not get gravity vector, probably timeout" << "\n";
         }
-        
-        Eigen::Quaternion<float> tempQuaternion = Eigen::Quaternion<float>(q_w, q_x, q_y, q_z);
-        tempQuaternion.normalize();
         
         if (!quaternionsInitialized) {
             quaternionsInitialized = true;
@@ -176,7 +179,7 @@ int main( int argc, const char *const *argv )
             } else if (endQuaternion.angularDistance(tempQuaternion) > endQuaternion.angularDistance(startQuaternion)) {
                 startQuaternion = tempQuaternion;
             }
-            Eigen::Quaternion<float> difference = (startQuaternion.conjugate() * endQuaternion);
+            quat_t difference = (startQuaternion.conjugate() * endQuaternion);
 
             std::cout << "Current angular distance: " << endQuaternion.angularDistance(startQuaternion) * 180 / M_PI << "\n";
             std::cout << "Closeness to full rotation along X axis: " << difference.toRotationMatrix()(0, 0) << "\n";
