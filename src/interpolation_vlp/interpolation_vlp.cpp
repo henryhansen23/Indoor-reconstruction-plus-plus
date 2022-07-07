@@ -164,11 +164,11 @@ int main( int argc, char **argv )
     // ---- Main loop ----
     //--------------------
 
-    int ct = 100000;
+    int ct = 1000;
     while (capture.isRun() && !interrupted)
     {
         ct--;
-        if( ct<0 ) { cerr << "."; ct = 100000; }
+        if( ct<=0 ) { cerr << "."; ct = 1000; }
 
         // Initialize lasers with velodyne data
         std::vector <velodyne::Laser> lasers;
@@ -191,6 +191,14 @@ int main( int argc, char **argv )
 
         // Initialize counter
         int j = 0;
+
+        // rotation towards the gravity vector is always safe
+        quat_t rotate_down;
+        if( imu.get_rotate_down( rotate_down ) == false )
+        {
+            std::cerr << "Could not get gravity vector, probably timeout" << "\n";
+        }
+
 
         // Looping over laser by laser (0-15)
         for (const velodyne::Laser &laser : lasers)
@@ -238,6 +246,8 @@ int main( int argc, char **argv )
 
             // Points for PCD file
             vec3_t xyz( x / 100.0, y / 100.0, z / 100.0 );
+
+xyz = rotate_down * xyz;
 
             // Color mapping: intensity -> rgb
             double v = -1.0 + double(intensity) / 75.0;
@@ -289,17 +299,13 @@ int main( int argc, char **argv )
             currentQuaternion = (startQuaternion.conjugate() * currentQuaternion);
 
             // Get gravity vector from imu
-            vec3_t g;
-            if( imu.get_gravity_vector( g ) == false )
+            vec3_t gravity;
+            if( imu.get_gravity_vector( gravity ) == false )
             {
                 std::cerr << "Could not get gravity vector, probably timeout" << "\n";
             }
 
-            quat_t rotate_down;
-            if( imu.get_rotate_down( rotate_down ) == false )
-            {
-                std::cerr << "Could not get gravity vector, probably timeout" << "\n";
-            }
+// currentQuaternion = quat_t( 1.0f, 0.0f, 0.0f, 0.0f );
 
             // Write quaternion and gravity data to csv file
             quaternion.open(path + "/quaternions/quaternions_datapacket.csv", std::ios_base::app);
@@ -307,9 +313,9 @@ int main( int argc, char **argv )
                        << currentQuaternion.x() << ","
                        << currentQuaternion.y() << ","
                        << currentQuaternion.z() << ", "
-                       << g(0) << ","
-                       << g(1) << ","
-                       << g(2) << ", "
+                       << gravity(0) << ","
+                       << gravity(1) << ","
+                       << gravity(2) << ", "
                        << rotate_down.w() << ","
                        << rotate_down.x() << ","
                        << rotate_down.y() << ","
