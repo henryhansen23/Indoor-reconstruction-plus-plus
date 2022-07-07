@@ -126,8 +126,6 @@ int main( int argc, char **argv )
     imu_data << "angv_x,angv_y,angv_z,lina_x,lina_y,lina_z\n";
     imu_data.close();
 
-    // Initialize pcl point cloud with point type -> used for pcd file
-    pcl::PointCloud<pcl::PointXYZRGBL> cloud;
 
     // Initialize some loop variables
     int number = 0; // Counter for number of pcds in one 360 degree frame
@@ -178,6 +176,10 @@ int main( int argc, char **argv )
         if (lasers.empty()) {
             continue;
         }
+
+        // Initialize pcl point cloud with point type -> used for pcd file
+        pcl::PointCloud<pcl::PointXYZRGBL> cloud;
+
         // Fill in the cloud data -> used for writing to pcd file
         cloud.width = static_cast <uint32_t>(lasers.size());
         cloud.height = 1;
@@ -194,8 +196,8 @@ int main( int argc, char **argv )
         for (const velodyne::Laser &laser : lasers)
         {
             // Distance, azimuth and vertical of laser
-            const auto distance = static_cast<double>( laser.distance );
-            const double azimuth = (laser.azimuth * PI) / 180.0;
+            const double distance = static_cast<double>( laser.distance );
+            const double azimuth  = (laser.azimuth * PI) / 180.0;
             const double vertical = (laser.vertical * PI) / 180.0;
 
             // Increments frame count and resets pcd count if azimuth angle exceeds field of view end degrees
@@ -221,53 +223,35 @@ int main( int argc, char **argv )
                 continue;
             }
 
-            // x-coordinate
-            auto x = static_cast <float> ((distance * std::cos(vertical)) * std::sin(azimuth));
-            // y-coordinate
-            auto y = static_cast <float> ((distance * std::cos(vertical)) * std::cos(azimuth));
-            // z-coordinate
-            auto z = static_cast <float> ((distance * std::sin(vertical)));
+            double x = distance * std::cos(vertical) * std::sin(azimuth); // x-coordinate
+            double y = distance * std::cos(vertical) * std::cos(azimuth); // y-coordinate
+            double z = distance * std::sin(vertical);                     // z-coordinate
+            if( params.apply_correction )
+            {
+                z = z + vertical_correction[laser.id] / 10.0;
+            }
+
             // Laser intensity
-            const auto intensity = static_cast <unsigned int> (laser.intensity);
+            const auto intensity = static_cast<unsigned int> (laser.intensity);
             // Laser timestamp
             timestamp = laser.time;
 
             // Points for PCD file
-            cloud.points[j].x = x / 100; // converting to meters
-            cloud.points[j].y = y / 100; // converting to meters
-            if( params.apply_correction )
-            {
-                cloud.points[j].z = (z + (vertical_correction[laser.id] / 10)) / 100; // converting to meters
-            }
-            else
-            {
-                cloud.points[j].z = z / 100; // converting to meters
-            }
+            vec3_t xyz( x / 100.0, y / 100.0, z / 100.0 );
 
             // Color mapping: intensity -> rgb
-            double v = -1 + double(intensity) / 75;
-            double r = clamp(1.5 - std::abs(2.0 * v - 1.0));
-            double g = clamp(1.5 - std::abs(2.0 * v));
-            double b = clamp(1.5 - std::abs(2.0 * v + 1.0));
+            double v = -1.0 + double(intensity) / 75.0;
 
-            // making hex string of rgb values
-            std::stringstream stream;
-            stream << "0x00"
-                   << std::setfill ('0') << std::setw(2) << std::hex << int(r*255)
-                   << std::setfill ('0') << std::setw(2) << std::hex << int(g*255)
-                   << std::setfill ('0') << std::setw(2) << std::hex << int(b*255);
-            std::string rgb_hex(stream.str());
+            vec3_t rgb( 255.0 * clamp(1.5 - std::abs(2.0 * v - 1.0)),
+                        255.0 * clamp(1.5 - std::abs(2.0 * v)),
+                        255.0 * clamp(1.5 - std::abs(2.0 * v + 1.0)) );
 
-            // convert hex string to float
-            uint32_t num;
-            float rgb;
-            char cstr[rgb_hex.size() + 1];
-            std::strcpy(cstr, rgb_hex.c_str());
-            std::sscanf(cstr, "%x", &num);
-            rgb = *((float*)&num);
-
-            // adding rgb float to point cloud
-            cloud.points[j].rgb = rgb;
+            cloud.points[j].x = xyz(0);
+            cloud.points[j].y = xyz(1);
+            cloud.points[j].z = xyz(2);
+            cloud.points[j].r = rgb(0);
+            cloud.points[j].g = rgb(1);
+            cloud.points[j].b = rgb(2);
 
             // adding the laser vertical component to the point label
             cloud.points[j].label = laser.vertical;
