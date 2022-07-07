@@ -116,7 +116,7 @@ int main( int argc, char **argv )
     boost::filesystem::create_directories(path + "/quaternions");
     std::ofstream quaternion;
     quaternion.open(path + "/quaternions/quaternions_datapacket.csv");
-    quaternion << "q_w,q_x,q_y,q_z,g_x,g_y,g_z,t,c\n";
+    quaternion << "q_w,q_x,q_y,q_z, g_x,g_y,g_z, rot_w,rot_x,rot_y,rot_z, t, c\n";
     quaternion.close();
 
     // Open and write header to imu data csv file
@@ -311,16 +311,26 @@ int main( int argc, char **argv )
                 std::cerr << "Could not get gravity vector, probably timeout" << "\n";
             }
 
+            quat_t rotate_down;
+            if( imu.get_rotate_down( rotate_down ) == false )
+            {
+                std::cerr << "Could not get gravity vector, probably timeout" << "\n";
+            }
+
             // Write quaternion and gravity data to csv file
             quaternion.open(path + "/quaternions/quaternions_datapacket.csv", std::ios_base::app);
             quaternion << currentQuaternion.w() << ","
                        << currentQuaternion.x() << ","
                        << currentQuaternion.y() << ","
-                       << currentQuaternion.z() << ","
+                       << currentQuaternion.z() << ", "
                        << g(0) << ","
                        << g(1) << ","
-                       << g(2) << ","
-                       << timestamp << ","
+                       << g(2) << ", "
+                       << rotate_down.w() << ","
+                       << rotate_down.x() << ","
+                       << rotate_down.y() << ","
+                       << rotate_down.z() << ", "
+                       << timestamp << ", "
                        << frame_count
                        << endl;
             quaternion.close();

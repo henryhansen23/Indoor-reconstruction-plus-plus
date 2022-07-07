@@ -34,6 +34,11 @@ public:
     bool get_quaternion( quat_t& v );
     bool get_gravity_vector( vec3_t& v );
 
+    /** Read the gravity vector, and it as a normalized rotation of the current
+     *  Lidar coordinate system.
+     */
+    bool get_rotate_down( quat_t& v );
+
     /** The float vector contains the angular velocities in degrees per second.
      *  Converted from IMU 2 which returns int16_t as multiples of a 16th of a degree per second.
      */

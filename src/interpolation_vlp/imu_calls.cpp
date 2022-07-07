@@ -54,6 +54,22 @@ bool Imu::get_gravity_vector( vec3_t& v )
     return true;
 }
 
+bool Imu::get_rotate_down( quat_t& v )
+{
+    int16_t roll, yaw, pitch;
+
+    if( imu_v2_get_gravity_vector( &_imu, &roll, &yaw, &pitch ) < 0 )
+    {
+        return false;
+    }
+    quat_t r = Eigen::AngleAxisf( roll,  Eigen::Vector3f::UnitX() )
+             * Eigen::AngleAxisf( yaw,   Eigen::Vector3f::UnitY() )
+             * Eigen::AngleAxisf( pitch, Eigen::Vector3f::UnitZ() );
+    r.normalize();
+    v = r;
+    return true;
+}
+
 bool Imu::get_angular_velocity( vec3_t& v )
 {
     int16_t x, y, z;
