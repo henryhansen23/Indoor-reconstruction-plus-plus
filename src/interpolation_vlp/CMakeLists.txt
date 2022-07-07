@@ -12,7 +12,9 @@ add_executable(interpolation_vlp
                Tinkerforge_IMU2.0/ip_connection.cpp
                Tinkerforge_IMU2.0/ip_connection.h
                interpolation_vlp.cpp
-	       cmdline.cpp cmdline.hpp)
+	       cmdline.cpp cmdline.hpp
+	       imu_calls.cpp imu_calls.hpp
+	       )
 
 # Find package thread
 

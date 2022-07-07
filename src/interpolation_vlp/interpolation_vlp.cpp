@@ -24,11 +24,11 @@
 #include "Tinkerforge_IMU2.0/brick_imu_v2.h"
 
 #include "cmdline.hpp"
+#include "imu_calls.hpp"
 
-
-#define HOST "localhost"
-#define PORT 4223
-#define UID "64tUkb" // Change XXYYZZ to the UID of your IMU Brick 2.0
+// #define HOST "localhost"
+// #define PORT 4223
+// #define UID "64tUkb" // Change XXYYZZ to the UID of your IMU Brick 2.0
 #define PI 3.14159265359
 
 #define VLP_ADDRESS "192.168.1.201"
@@ -90,19 +90,9 @@ int main( int argc, char **argv )
 // ------ SET UP IMU CONNECTION -------
 // ------------------------------------
 
-    // Create IP connection
-    IPConnection ipcon{};
-    ipcon_create(&ipcon);
+    Imu imu;
 
-    // Create device object
-    IMUV2 imu{};
-    imu_v2_create(&imu, UID, &ipcon);
-
-    // Connect to brickd
-    if (ipcon_connect(&ipcon, HOST, PORT) < 0) {
-        std::cerr << "Could not connect\n";
-        return 1; // Don't use device before ipcon is connected
-    }
+    imu.init( );
 
 // -------------------------------------------------
 
@@ -144,6 +134,7 @@ int main( int argc, char **argv )
     int frame_count = 0; // Counter for a full 360 degree rotation
     double azimuth_rotation = params.fov_end; // Used to check n-1 azimuth rotation
     long timestamp = 0;
+
 
     // ----------------------------------------------------------------
     // --------------------SET UP VLP CONNECTION ----------------------
@@ -299,13 +290,13 @@ int main( int argc, char **argv )
             // Vector with path and filename of all pcds
             pcds.push_back(path + filename.str());
 
-            // Get quaternions from imu
-            int16_t q_w, q_x, q_y, q_z;
-
-            if (imu_v2_get_quaternion(&imu, &q_w, &q_x, &q_y, &q_z) < 0) {
-              std::cerr << "Could not get quaternion, probably timeout" << "\n";
+            // Get quaternion from imu
+            quat_t currentQuaternion;
+            if( imu.get_quaternion( currentQuaternion ) == false )
+            {
+                std::cerr << "Could not get quaternion, probably timeout" << endl;
             }
-            Eigen::Quaternion<float> currentQuaternion(q_w, q_x, q_y, q_z);
+
             currentQuaternion.normalize();
             if (!startQuaternionSet) {
                 startQuaternion = currentQuaternion;
@@ -314,40 +305,51 @@ int main( int argc, char **argv )
             currentQuaternion = (startQuaternion.conjugate() * currentQuaternion);
 
             // Get gravity vector from imu
-            int16_t g_x, g_y, g_z;
-
-            if (imu_v2_get_gravity_vector(&imu, &g_x, &g_y, &g_z) < 0) {
-              std::cerr << "Could not get gravity vector, probably timeout" << "\n";
+            vec3_t g;
+            if( imu.get_gravity_vector( g ) == false )
+            {
+                std::cerr << "Could not get gravity vector, probably timeout" << "\n";
             }
 
             // Write quaternion and gravity data to csv file
             quaternion.open(path + "/quaternions/quaternions_datapacket.csv", std::ios_base::app);
-            quaternion << currentQuaternion.w() << "," << currentQuaternion.x() << "," << currentQuaternion.y() << "," << currentQuaternion.z()
-                    << "," << g_x << "," << g_y << "," << g_z << "," << timestamp << "," << frame_count <<"\n";
+            quaternion << currentQuaternion.w() << ","
+                       << currentQuaternion.x() << ","
+                       << currentQuaternion.y() << ","
+                       << currentQuaternion.z() << ","
+                       << g(0) << ","
+                       << g(1) << ","
+                       << g(2) << ","
+                       << timestamp << ","
+                       << frame_count
+                       << endl;
             quaternion.close();
 
-            // Get angular velocity from imu
-            int16_t angv_x, angv_y, angv_z;
-            if (imu_v2_get_angular_velocity(&imu, &angv_x, &angv_y, &angv_z) < 0) {
-              std::cerr << "Could not get angular velocity, probably timeout" << "\n";
+            vec3_t angv;
+            if( imu.get_angular_velocity( angv ) == false )
+            {
+                std::cerr << "Could not get angular velocity, probably timeout" << "\n";
             }
 
-            // Get linear acceleration from imu
-            int16_t lina_x, lina_y, lina_z;
-            if (imu_v2_get_linear_acceleration(&imu, &lina_x, &lina_y, &lina_z) < 0) {
-              std::cerr << "Could not get linear acceleration, probably timeout" << "\n";
+            vec3_t linacc;
+            if( imu.get_linear_acceleration( linacc ) == false )
+            {
+                std::cerr << "Could not get linear acceleration, probably timeout" << "\n";
             }
 
             // Write angular velocity and linear acceleration to file
             imu_data.open(path + "/imu/imu_data.csv", std::ios_base::app);
-            imu_data << angv_x / 16.0  << "," << angv_y / 16.0  << "," << angv_z / 16.0  << ","
-                    << lina_x / 100.0 << "," << lina_y / 100.0 << "," << lina_z / 100.0 <<"\n";
+            imu_data << angv(0) << ","
+                     << angv(1) << ","
+                     << angv(2) << ","
+                     << linacc(0) << ","
+                     << linacc(1) << ","
+                     << linacc(2)
+                     << endl;
             imu_data.close();
         }
     }
 
-    imu_v2_destroy(&imu);
-    ipcon_destroy(&ipcon); // Calls ipcon_disconnect internally
     return 0;
 }
 
