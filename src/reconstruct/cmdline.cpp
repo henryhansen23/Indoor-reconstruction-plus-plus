@@ -17,13 +17,18 @@ CmdLine::CmdLine( int argc, char** argv )
 
     po::options_description desc{"Options"};
     desc.add_options()
-        ("help,h", "Help screen")
-        ("v,v",      po::bool_switch(&_visualize)->default_value(false),
-                    "Visualize the reconstruction")
-        ("icp",      po::value<std::string>(&_icp),
-                    "The ICP algorithm to use: generalized, non-linear or symmetric (only with PCL>=1.10)")
-        ("data-dir", po::value<std::string>(&_data_dir)->required(),
-                    "Directory where pointcloud fragments can be found (positional argument)");
+        ( "help,h",
+          "Help screen" )
+        ( "verbose,v",
+          po::bool_switch(&_visualize)->default_value(false),
+          "Visualize the reconstruction" )
+        ( "icp",
+          po::value<std::string>(&_icp),
+          "The ICP algorithm to use: generalized, non-linear or symmetric (only with PCL>=1.10)" )
+        ( "data-dir,d",
+          po::value<std::string>(&_data_dir)->required(),
+          "Directory where pointcloud fragments can be found (positional argument)" )
+        ;
 
     po::variables_map vm;
 
