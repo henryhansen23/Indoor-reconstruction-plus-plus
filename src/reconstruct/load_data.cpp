@@ -103,6 +103,14 @@ load_datapackets(const std::string path)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+ * Read vectors from the file with rotation. We assume that the first vector is always normalized to
+ * (1,0,0,0), meaning that the collection functions calibrates into the direction that the Lidar points
+ * to at the start. We turn everything into the gravity direction of that very first position.
+ *
+ * Note that we could also left-multiply with the initial current_rotation.conjugate() to handle with
+ * situations where the first vector is not (1,0,0,0).
+ */
 static bool parseit( const std::string& line, vec4d_t& quat, double& time )
 {
     static bool   init = false;
@@ -132,12 +140,10 @@ static bool parseit( const std::string& line, vec4d_t& quat, double& time )
         {
             init = true;
             first_quat = grav_rotation;
+            first_quat.normalize();
         }
-        std::cout << std::setprecision(3)
-                  << "Rotation: " << current_rotation
-                  << " turned: " << current_rotation * first_quat
-                  << " down: " << grav_rotation
-                  << std::endl;
+
+        current_rotation = first_quat * current_rotation;
 
         quat[0] = current_rotation.w();
         quat[1] = current_rotation.x();
