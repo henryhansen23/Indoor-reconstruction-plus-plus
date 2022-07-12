@@ -1,6 +1,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <iomanip>
 
 #include <pcl/point_cloud.h>
 #include <pcl/io/pcd_io.h>
@@ -102,6 +103,41 @@ load_datapackets(const std::string path)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+static void parseit( const std::string& line )
+{
+    static bool   init = false;
+    static quat_t first_quat;
+
+    quat_t current_rotation;
+    vec3_t grav_vector;
+    quat_t grav_rotation;
+    long   timestamp;
+    int    counter;
+    int    res;
+    res = sscanf( line.c_str(),
+                  "%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %ld, %d",
+                  &current_rotation.w(), &current_rotation.x(), &current_rotation.y(), &current_rotation.z(),
+                  &grav_vector(0), &grav_vector(1), &grav_vector(2),
+                  &grav_rotation.w(), &grav_rotation.x(), &grav_rotation.y(), &grav_rotation.z(),
+                  &timestamp,
+                  &counter );
+    if( res != 13 )
+        std::cout << "Read only " << res << " elements" << std::endl;
+    else
+    {
+        if( init == false )
+        {
+            init = true;
+            first_quat = grav_rotation;
+        }
+        std::cout << std::setprecision(3)
+                  << "Rotation: " << current_rotation
+                  << " turned: " << current_rotation * first_quat
+                  << " down: " << grav_rotation
+                  << std::endl;
+    }
+}
+
 void read_quaternions_file(quart_vector_t& quaternions, const std::string path)
 {
     std::ifstream input(path + "/" + "quaternions_datapacket.csv");
@@ -110,6 +146,9 @@ void read_quaternions_file(quart_vector_t& quaternions, const std::string path)
     // Read lines
     std::getline(input, line); // Read first line
     while (std::getline(input, line)) {
+
+        parseit( line );
+
         int pos = 0;
         std::vector<double> row;
         // Split numbers by delimiter
@@ -124,20 +163,6 @@ void read_quaternions_file(quart_vector_t& quaternions, const std::string path)
             quat(j) = row[j];
         }
         double time = row[11];
-
-        quat_t current_rotation;
-        vec3_t grav_vector;
-        quat_t grav_rotation;
-        long   timestamp;
-        int    counter;
-        sscanf( line.c_str(),
-                "%f %f %f %f %f %f %f %f %f %f %f %ld %d",
-                &current_rotation.w(), &current_rotation.x(), &current_rotation.y(), &current_rotation.z(),
-                &grav_vector(0), &grav_vector(1), &grav_vector(2),
-                &grav_rotation.w(), &grav_rotation.x(), &grav_rotation.y(), &grav_rotation.z(),
-                &timestamp,
-                &counter );
-        std::cout << "Rotation: " << current_rotation << std::endl;
 
         quaternions.first .push_back(quat);
         quaternions.second.push_back(time);

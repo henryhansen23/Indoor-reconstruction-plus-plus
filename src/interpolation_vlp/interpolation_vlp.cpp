@@ -247,8 +247,6 @@ int main( int argc, char **argv )
             // Points for PCD file
             vec3_t xyz( x / 100.0, y / 100.0, z / 100.0 );
 
-xyz = rotate_down * xyz;
-
             // Color mapping: intensity -> rgb
             double v = -1.0 + double(intensity) / 75.0;
 
