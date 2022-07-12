@@ -14,6 +14,8 @@
 typedef Eigen::Vector3f          vec3_t;
 typedef Eigen::Quaternion<float> quat_t;
 
+typedef Eigen::Vector4d          vec4d_t;
+
 typedef std::pair<std::vector<Eigen::Vector4d, 
                               Eigen::aligned_allocator<Eigen::Vector4d> >, 
                   std::vector<double> > quart_vector_t;

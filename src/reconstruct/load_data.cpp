@@ -103,7 +103,7 @@ load_datapackets(const std::string path)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-static void parseit( const std::string& line )
+static bool parseit( const std::string& line, vec4d_t& quat, double& time )
 {
     static bool   init = false;
     static quat_t first_quat;
@@ -122,7 +122,10 @@ static void parseit( const std::string& line )
                   &timestamp,
                   &counter );
     if( res != 13 )
+    {
         std::cout << "Read only " << res << " elements" << std::endl;
+        return false;
+    }
     else
     {
         if( init == false )
@@ -135,6 +138,13 @@ static void parseit( const std::string& line )
                   << " turned: " << current_rotation * first_quat
                   << " down: " << grav_rotation
                   << std::endl;
+
+        quat[0] = current_rotation.w();
+        quat[1] = current_rotation.x();
+        quat[2] = current_rotation.y();
+        quat[3] = current_rotation.z();
+        time    = timestamp;
+        return true;
     }
 }
 
@@ -145,10 +155,15 @@ void read_quaternions_file(quart_vector_t& quaternions, const std::string path)
     std::string line;
     // Read lines
     std::getline(input, line); // Read first line
-    while (std::getline(input, line)) {
+    while (std::getline(input, line))
+    {
+        vec4d_t quat;
+        double  time;
 
-        parseit( line );
+        bool ok = parseit( line, quat, time );
+        if( !ok ) continue; // read next line
 
+#if 0
         int pos = 0;
         std::vector<double> row;
         // Split numbers by delimiter
@@ -158,11 +173,11 @@ void read_quaternions_file(quart_vector_t& quaternions, const std::string path)
             line.erase(0, pos + delimiter.length());
         }
         // Store row
-        Eigen::Vector4d quat;
         for (int j = 0; j < 4; ++j) {
             quat(j) = row[j];
         }
-        double time = row[11];
+        time = row[11];
+#endif
 
         quaternions.first .push_back(quat);
         quaternions.second.push_back(time);
