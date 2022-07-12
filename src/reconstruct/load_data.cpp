@@ -124,6 +124,21 @@ void read_quaternions_file(quart_vector_t& quaternions, const std::string path)
             quat(j) = row[j];
         }
         double time = row[11];
+
+        quat_t current_rotation;
+        vec3_t grav_vector;
+        quat_t grav_rotation;
+        long   timestamp;
+        int    counter;
+        sscanf( line.c_str(),
+                "%f %f %f %f %f %f %f %f %f %f %f %ld %d",
+                &current_rotation.w(), &current_rotation.x(), &current_rotation.y(), &current_rotation.z(),
+                &grav_vector(0), &grav_vector(1), &grav_vector(2),
+                &grav_rotation.w(), &grav_rotation.x(), &grav_rotation.y(), &grav_rotation.z(),
+                &timestamp,
+                &counter );
+        std::cout << "Rotation: " << current_rotation << std::endl;
+
         quaternions.first .push_back(quat);
         quaternions.second.push_back(time);
     }
