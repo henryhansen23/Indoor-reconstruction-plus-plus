@@ -19,12 +19,9 @@
 // Boost
 #include <boost/filesystem.hpp>
 
-// Tinkerforge IMU2.0
-#include "Tinkerforge_IMU2.0/ip_connection.h"
-#include "Tinkerforge_IMU2.0/brick_imu_v2.h"
-
 #include "cmdline.hpp"
 #include "imu_calls.hpp"
+#include "gps_calls.hpp"
 
 // #define HOST "localhost"
 // #define PORT 4223
@@ -90,9 +87,11 @@ int main( int argc, char **argv )
 // ------ SET UP IMU CONNECTION -------
 // ------------------------------------
 
-    Imu imu;
+    IPCon ipcon;
+    ipcon.init( );
 
-    imu.init( );
+    Imu imu(ipcon);
+    Gps gps(ipcon);
 
 // -------------------------------------------------
 

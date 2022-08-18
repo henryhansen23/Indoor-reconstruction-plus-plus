@@ -7,13 +7,17 @@ project(interpolation_vlp)
 set(CMAKE_CXX_STANDARD 11)
 
 add_executable(interpolation_vlp
-               Tinkerforge_IMU2.0/brick_imu_v2.cpp
-               Tinkerforge_IMU2.0/brick_imu_v2.h
-               Tinkerforge_IMU2.0/ip_connection.cpp
-               Tinkerforge_IMU2.0/ip_connection.h
+               Tinkerforge/brick_imu_v2.c
+               Tinkerforge/brick_imu_v2.h
+               Tinkerforge/bricklet_gps_v2.c
+               Tinkerforge/bricklet_gps_v2.h
+               Tinkerforge/ip_connection.c
+               Tinkerforge/ip_connection.h
                interpolation_vlp.cpp
 	       cmdline.cpp cmdline.hpp
 	       imu_calls.cpp imu_calls.hpp
+	       gps_calls.cpp gps_calls.hpp
+	       ipcon.cpp ipcon.hpp
 	       )
 
 # Find package thread

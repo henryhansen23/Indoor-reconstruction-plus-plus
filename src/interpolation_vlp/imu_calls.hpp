@@ -1,8 +1,9 @@
 #pragma once
 
 // Tinkerforge IMU2.0
-#include "Tinkerforge_IMU2.0/ip_connection.h"
-#include "Tinkerforge_IMU2.0/brick_imu_v2.h"
+#include "Tinkerforge/brick_imu_v2.h"
+
+#include "ipcon.hpp"
 
 // Eigen3
 #include <eigen3/Eigen/Geometry>
@@ -23,13 +24,11 @@ typedef Eigen::Vector3f vec3_t;
  */
 class Imu
 {
-    IPConnection _ipcon;
+    IPCon&     _ipcon;
     IMUV2        _imu;
 public:
-    Imu();
+    Imu(IPCon& pIPCon);
     ~Imu();
-
-    bool init( );
 
     bool get_quaternion( quat_t& v );
     bool get_gravity_vector( vec3_t& v );

@@ -1,7 +1,7 @@
 /* ***********************************************************
- * This file was automatically generated on 2019-01-29.      *
+ * This file was automatically generated on 2022-05-11.      *
  *                                                           *
- * C/C++ Bindings Version 2.1.24                             *
+ * C/C++ Bindings Version 2.1.33                             *
  *                                                           *
  * If you have a bugfix for this file and want to commit it, *
  * please fix the bug in the generator. You can find a link  *
@@ -266,6 +266,16 @@ typedef Device IMUV2;
 /**
  * \ingroup BrickIMUV2
  */
+#define IMU_V2_FUNCTION_WRITE_BRICKLET_PLUGIN 246
+
+/**
+ * \ingroup BrickIMUV2
+ */
+#define IMU_V2_FUNCTION_READ_BRICKLET_PLUGIN 247
+
+/**
+ * \ingroup BrickIMUV2
+ */
 #define IMU_V2_FUNCTION_GET_IDENTITY 255
 
 /**
@@ -352,7 +362,7 @@ typedef Device IMUV2;
  * 
  * This callback is triggered periodically with the period that is set by
  * {@link imu_v2_set_quaternion_period}. The parameters are the orientation
- * (x, y, z, w) of the IMU Brick in quaternions. See {@link imu_v2_get_quaternion}
+ * (w, x, y, z) of the IMU Brick in quaternions. See {@link imu_v2_get_quaternion}
  * for details.
  */
 #define IMU_V2_CALLBACK_QUATERNION 39
@@ -644,7 +654,7 @@ void imu_v2_destroy(IMUV2 *imu_v2);
  * Enabling the response expected flag for a setter function allows to
  * detect timeouts and other error conditions calls of this setter as well.
  * The device will then send a response for this purpose. If this flag is
- * disabled for a setter function then no response is send and errors are
+ * disabled for a setter function then no response is sent and errors are
  * silently ignored, because they cannot be detected.
  */
 int imu_v2_get_response_expected(IMUV2 *imu_v2, uint8_t function_id, bool *ret_response_expected);
@@ -660,7 +670,7 @@ int imu_v2_get_response_expected(IMUV2 *imu_v2, uint8_t function_id, bool *ret_r
  * Enabling the response expected flag for a setter function allows to detect
  * timeouts and other error conditions calls of this setter as well. The device
  * will then send a response for this purpose. If this flag is disabled for a
- * setter function then no response is send and errors are silently ignored,
+ * setter function then no response is sent and errors are silently ignored,
  * because they cannot be detected.
  */
 int imu_v2_set_response_expected(IMUV2 *imu_v2, uint8_t function_id, bool response_expected);
@@ -679,7 +689,7 @@ int imu_v2_set_response_expected_all(IMUV2 *imu_v2, bool response_expected);
  * Registers the given \c function with the given \c callback_id. The
  * \c user_data will be passed as the last parameter to the \c function.
  */
-void imu_v2_register_callback(IMUV2 *imu_v2, int16_t callback_id, void *function, void *user_data);
+void imu_v2_register_callback(IMUV2 *imu_v2, int16_t callback_id, void (*function)(void), void *user_data);
 
 /**
  * \ingroup BrickIMUV2
@@ -693,7 +703,8 @@ int imu_v2_get_api_version(IMUV2 *imu_v2, uint8_t ret_api_version[3]);
  * \ingroup BrickIMUV2
  *
  * Returns the calibrated acceleration from the accelerometer for the
- * x, y and z axis in 1/100 m/s².
+ * x, y and z axis. The acceleration is in the range configured with
+ * {@link imu_v2_set_sensor_configuration}.
  * 
  * If you want to get the acceleration periodically, it is recommended
  * to use the {@link IMU_V2_CALLBACK_ACCELERATION} callback and set the period with
@@ -705,7 +716,7 @@ int imu_v2_get_acceleration(IMUV2 *imu_v2, int16_t *ret_x, int16_t *ret_y, int16
  * \ingroup BrickIMUV2
  *
  * Returns the calibrated magnetic field from the magnetometer for the
- * x, y and z axis in 1/16 µT (Microtesla).
+ * x, y and z axis.
  * 
  * If you want to get the magnetic field periodically, it is recommended
  * to use the {@link IMU_V2_CALLBACK_MAGNETIC_FIELD} callback and set the period with
@@ -717,7 +728,8 @@ int imu_v2_get_magnetic_field(IMUV2 *imu_v2, int16_t *ret_x, int16_t *ret_y, int
  * \ingroup BrickIMUV2
  *
  * Returns the calibrated angular velocity from the gyroscope for the
- * x, y and z axis in 1/16 °/s.
+ * x, y and z axis. The angular velocity is in the range configured with
+ * {@link imu_v2_set_sensor_configuration}.
  * 
  * If you want to get the angular velocity periodically, it is recommended
  * to use the {@link IMU_V2_CALLBACK_ANGULAR_VELOCITY} acallback nd set the period with
@@ -728,8 +740,8 @@ int imu_v2_get_angular_velocity(IMUV2 *imu_v2, int16_t *ret_x, int16_t *ret_y, i
 /**
  * \ingroup BrickIMUV2
  *
- * Returns the temperature of the IMU Brick. The temperature is given in
- * °C. The temperature is measured in the core of the BNO055 IC, it is not the
+ * Returns the temperature of the IMU Brick.
+ * The temperature is measured in the core of the BNO055 IC, it is not the
  * ambient temperature
  */
 int imu_v2_get_temperature(IMUV2 *imu_v2, int8_t *ret_temperature);
@@ -738,16 +750,10 @@ int imu_v2_get_temperature(IMUV2 *imu_v2, int8_t *ret_temperature);
  * \ingroup BrickIMUV2
  *
  * Returns the current orientation (heading, roll, pitch) of the IMU Brick as
- * independent Euler angles in 1/16 degree. Note that Euler angles always
+ * independent Euler angles. Note that Euler angles always
  * experience a `gimbal lock <https://en.wikipedia.org/wiki/Gimbal_lock>`__.
  * We recommend that you use quaternions instead, if you need the absolute
  * orientation.
- * 
- * The rotation angle has the following ranges:
- * 
- * * heading: 0° to 360°
- * * roll: -90° to +90°
- * * pitch: -180° to +180°
  * 
  * If you want to get the orientation periodically, it is recommended
  * to use the {@link IMU_V2_CALLBACK_ORIENTATION} callback and set the period with
@@ -759,7 +765,8 @@ int imu_v2_get_orientation(IMUV2 *imu_v2, int16_t *ret_heading, int16_t *ret_rol
  * \ingroup BrickIMUV2
  *
  * Returns the linear acceleration of the IMU Brick for the
- * x, y and z axis in 1/100 m/s².
+ * x, y and z axis. The acceleration is in the range configured with
+ * {@link imu_v2_set_sensor_configuration}.
  * 
  * The linear acceleration is the acceleration in each of the three
  * axis of the IMU Brick with the influences of gravity removed.
@@ -777,7 +784,7 @@ int imu_v2_get_linear_acceleration(IMUV2 *imu_v2, int16_t *ret_x, int16_t *ret_y
  * \ingroup BrickIMUV2
  *
  * Returns the current gravity vector of the IMU Brick for the
- * x, y and z axis in 1/100 m/s².
+ * x, y and z axis.
  * 
  * The gravity vector is the acceleration that occurs due to gravity.
  * Influences of additional linear acceleration are removed.
@@ -797,7 +804,7 @@ int imu_v2_get_gravity_vector(IMUV2 *imu_v2, int16_t *ret_x, int16_t *ret_y, int
  * Returns the current orientation (w, x, y, z) of the IMU Brick as
  * `quaternions <https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation>`__.
  * 
- * You have to divide the returns values by 16383 (14 bit) to get
+ * You have to divide the return values by 16383 (14 bit) to get
  * the usual range of -1.0 to +1.0 for quaternions.
  * 
  * If you want to get the quaternions periodically, it is recommended
@@ -811,14 +818,14 @@ int imu_v2_get_quaternion(IMUV2 *imu_v2, int16_t *ret_w, int16_t *ret_x, int16_t
  *
  * Return all of the available data of the IMU Brick.
  * 
- * * acceleration in 1/100 m/s² (see {@link imu_v2_get_acceleration})
- * * magnetic field in 1/16 µT (see {@link imu_v2_get_magnetic_field})
- * * angular velocity in 1/16 °/s (see {@link imu_v2_get_angular_velocity})
- * * Euler angles in 1/16 ° (see {@link imu_v2_get_orientation})
- * * quaternion 1/16383 (see {@link imu_v2_get_quaternion})
- * * linear acceleration 1/100 m/s² (see {@link imu_v2_get_linear_acceleration})
- * * gravity vector 1/100 m/s² (see {@link imu_v2_get_gravity_vector})
- * * temperature in 1 °C (see {@link imu_v2_get_temperature})
+ * * acceleration (see {@link imu_v2_get_acceleration})
+ * * magnetic field (see {@link imu_v2_get_magnetic_field})
+ * * angular velocity (see {@link imu_v2_get_angular_velocity})
+ * * Euler angles (see {@link imu_v2_get_orientation})
+ * * quaternion (see {@link imu_v2_get_quaternion})
+ * * linear acceleration (see {@link imu_v2_get_linear_acceleration})
+ * * gravity vector (see {@link imu_v2_get_gravity_vector})
+ * * temperature (see {@link imu_v2_get_temperature})
  * * calibration status (see below)
  * 
  * The calibration status consists of four pairs of two bits. Each pair
@@ -883,10 +890,8 @@ int imu_v2_save_calibration(IMUV2 *imu_v2, bool *ret_calibration_done);
 /**
  * \ingroup BrickIMUV2
  *
- * Sets the period in ms with which the {@link IMU_V2_CALLBACK_ACCELERATION} callback is triggered
+ * Sets the period with which the {@link IMU_V2_CALLBACK_ACCELERATION} callback is triggered
  * periodically. A value of 0 turns the callback off.
- * 
- * The default value is 0.
  */
 int imu_v2_set_acceleration_period(IMUV2 *imu_v2, uint32_t period);
 
@@ -900,7 +905,7 @@ int imu_v2_get_acceleration_period(IMUV2 *imu_v2, uint32_t *ret_period);
 /**
  * \ingroup BrickIMUV2
  *
- * Sets the period in ms with which the {@link IMU_V2_CALLBACK_MAGNETIC_FIELD} callback is triggered
+ * Sets the period with which the {@link IMU_V2_CALLBACK_MAGNETIC_FIELD} callback is triggered
  * periodically. A value of 0 turns the callback off.
  */
 int imu_v2_set_magnetic_field_period(IMUV2 *imu_v2, uint32_t period);
@@ -915,7 +920,7 @@ int imu_v2_get_magnetic_field_period(IMUV2 *imu_v2, uint32_t *ret_period);
 /**
  * \ingroup BrickIMUV2
  *
- * Sets the period in ms with which the {@link IMU_V2_CALLBACK_ANGULAR_VELOCITY} callback is
+ * Sets the period with which the {@link IMU_V2_CALLBACK_ANGULAR_VELOCITY} callback is
  * triggered periodically. A value of 0 turns the callback off.
  */
 int imu_v2_set_angular_velocity_period(IMUV2 *imu_v2, uint32_t period);
@@ -930,7 +935,7 @@ int imu_v2_get_angular_velocity_period(IMUV2 *imu_v2, uint32_t *ret_period);
 /**
  * \ingroup BrickIMUV2
  *
- * Sets the period in ms with which the {@link IMU_V2_CALLBACK_TEMPERATURE} callback is triggered
+ * Sets the period with which the {@link IMU_V2_CALLBACK_TEMPERATURE} callback is triggered
  * periodically. A value of 0 turns the callback off.
  */
 int imu_v2_set_temperature_period(IMUV2 *imu_v2, uint32_t period);
@@ -945,7 +950,7 @@ int imu_v2_get_temperature_period(IMUV2 *imu_v2, uint32_t *ret_period);
 /**
  * \ingroup BrickIMUV2
  *
- * Sets the period in ms with which the {@link IMU_V2_CALLBACK_ORIENTATION} callback is triggered
+ * Sets the period with which the {@link IMU_V2_CALLBACK_ORIENTATION} callback is triggered
  * periodically. A value of 0 turns the callback off.
  */
 int imu_v2_set_orientation_period(IMUV2 *imu_v2, uint32_t period);
@@ -960,7 +965,7 @@ int imu_v2_get_orientation_period(IMUV2 *imu_v2, uint32_t *ret_period);
 /**
  * \ingroup BrickIMUV2
  *
- * Sets the period in ms with which the {@link IMU_V2_CALLBACK_LINEAR_ACCELERATION} callback is
+ * Sets the period with which the {@link IMU_V2_CALLBACK_LINEAR_ACCELERATION} callback is
  * triggered periodically. A value of 0 turns the callback off.
  */
 int imu_v2_set_linear_acceleration_period(IMUV2 *imu_v2, uint32_t period);
@@ -975,7 +980,7 @@ int imu_v2_get_linear_acceleration_period(IMUV2 *imu_v2, uint32_t *ret_period);
 /**
  * \ingroup BrickIMUV2
  *
- * Sets the period in ms with which the {@link IMU_V2_CALLBACK_GRAVITY_VECTOR} callback is triggered
+ * Sets the period with which the {@link IMU_V2_CALLBACK_GRAVITY_VECTOR} callback is triggered
  * periodically. A value of 0 turns the callback off.
  */
 int imu_v2_set_gravity_vector_period(IMUV2 *imu_v2, uint32_t period);
@@ -990,7 +995,7 @@ int imu_v2_get_gravity_vector_period(IMUV2 *imu_v2, uint32_t *ret_period);
 /**
  * \ingroup BrickIMUV2
  *
- * Sets the period in ms with which the {@link IMU_V2_CALLBACK_QUATERNION} callback is triggered
+ * Sets the period with which the {@link IMU_V2_CALLBACK_QUATERNION} callback is triggered
  * periodically. A value of 0 turns the callback off.
  */
 int imu_v2_set_quaternion_period(IMUV2 *imu_v2, uint32_t period);
@@ -1005,7 +1010,7 @@ int imu_v2_get_quaternion_period(IMUV2 *imu_v2, uint32_t *ret_period);
 /**
  * \ingroup BrickIMUV2
  *
- * Sets the period in ms with which the {@link IMU_V2_CALLBACK_ALL_DATA} callback is triggered
+ * Sets the period with which the {@link IMU_V2_CALLBACK_ALL_DATA} callback is triggered
  * periodically. A value of 0 turns the callback off.
  */
 int imu_v2_set_all_data_period(IMUV2 *imu_v2, uint32_t period);
@@ -1023,14 +1028,6 @@ int imu_v2_get_all_data_period(IMUV2 *imu_v2, uint32_t *ret_period);
  * Sets the available sensor configuration for the Magnetometer, Gyroscope and
  * Accelerometer. The Accelerometer Range is user selectable in all fusion modes,
  * all other configurations are auto-controlled in fusion mode.
- * 
- * The default values are:
- * 
- * * Magnetometer Rate 20Hz
- * * Gyroscope Range 2000°/s
- * * Gyroscope Bandwidth 32Hz
- * * Accelerometer Range +/-4G
- * * Accelerometer Bandwidth 62.5Hz
  * 
  * .. versionadded:: 2.0.5$nbsp;(Firmware)
  */
@@ -1063,8 +1060,6 @@ int imu_v2_get_sensor_configuration(IMUV2 *imu_v2, uint8_t *ret_magnetometer_rat
  * the first time will likely take longer, but small magnetic influences might
  * not affect the automatic calibration as much.
  * 
- * By default sensor fusion is on.
- * 
  * .. versionadded:: 2.0.5$nbsp;(Firmware)
  */
 int imu_v2_set_sensor_fusion_mode(IMUV2 *imu_v2, uint8_t mode);
@@ -1085,8 +1080,8 @@ int imu_v2_get_sensor_fusion_mode(IMUV2 *imu_v2, uint8_t *ret_mode);
  * enabled, the Brick will try to adapt the baudrate for the communication
  * between Bricks and Bricklets according to the amount of data that is transferred.
  * 
- * The baudrate will be increased exponentially if lots of data is send/received and
- * decreased linearly if little data is send/received.
+ * The baudrate will be increased exponentially if lots of data is sent/received and
+ * decreased linearly if little data is sent/received.
  * 
  * This lowers the baudrate in applications where little data is transferred (e.g.
  * a weather station) and increases the robustness. If there is lots of data to transfer
@@ -1099,10 +1094,6 @@ int imu_v2_get_sensor_fusion_mode(IMUV2 *imu_v2, uint8_t *ret_mode);
  * The maximum value of the baudrate can be set per port with the function
  * {@link imu_v2_set_spitfp_baudrate}. If the dynamic baudrate is disabled, the baudrate
  * as set by {@link imu_v2_set_spitfp_baudrate} will be used statically.
- * 
- * The minimum dynamic baudrate has a value range of 400000 to 2000000 baud.
- * 
- * By default dynamic baudrate is enabled and the minimum dynamic baudrate is 400000.
  * 
  * .. versionadded:: 2.0.10$nbsp;(Firmware)
  */
@@ -1134,8 +1125,7 @@ int imu_v2_get_send_timeout_count(IMUV2 *imu_v2, uint8_t communication_method, u
 /**
  * \ingroup BrickIMUV2
  *
- * Sets the baudrate for a specific Bricklet port ('a' - 'd'). The
- * baudrate can be in the range 400000 to 2000000.
+ * Sets the baudrate for a specific Bricklet port.
  * 
  * If you want to increase the throughput of Bricklets you can increase
  * the baudrate. If you get a high error count because of high
@@ -1146,10 +1136,8 @@ int imu_v2_get_send_timeout_count(IMUV2 *imu_v2, uint8_t communication_method, u
  * function corresponds to the maximum baudrate (see {@link imu_v2_set_spitfp_baudrate_config}).
  * 
  * Regulatory testing is done with the default baudrate. If CE compatibility
- * or similar is necessary in you applications we recommend to not change
+ * or similar is necessary in your applications we recommend to not change
  * the baudrate.
- * 
- * The default baudrate for all ports is 1400000.
  * 
  * .. versionadded:: 2.0.5$nbsp;(Firmware)
  */
@@ -1228,11 +1216,11 @@ int imu_v2_get_protocol1_bricklet_name(IMUV2 *imu_v2, char port, uint8_t *ret_pr
 /**
  * \ingroup BrickIMUV2
  *
- * Returns the temperature in °C/10 as measured inside the microcontroller. The
+ * Returns the temperature as measured inside the microcontroller. The
  * value returned is not the ambient temperature!
  * 
  * The temperature is only proportional to the real temperature and it has an
- * accuracy of +-15%. Practically it is only useful as an indicator for
+ * accuracy of ±15%. Practically it is only useful as an indicator for
  * temperature changes.
  */
 int imu_v2_get_chip_temperature(IMUV2 *imu_v2, int16_t *ret_temperature);
@@ -1252,11 +1240,33 @@ int imu_v2_reset(IMUV2 *imu_v2);
 /**
  * \ingroup BrickIMUV2
  *
+ * Writes 32 bytes of firmware to the bricklet attached at the given port.
+ * The bytes are written to the position offset * 32.
+ * 
+ * This function is used by Brick Viewer during flashing. It should not be
+ * necessary to call it in a normal user program.
+ */
+int imu_v2_write_bricklet_plugin(IMUV2 *imu_v2, char port, uint8_t offset, uint8_t chunk[32]);
+
+/**
+ * \ingroup BrickIMUV2
+ *
+ * Reads 32 bytes of firmware from the bricklet attached at the given port.
+ * The bytes are read starting at the position offset * 32.
+ * 
+ * This function is used by Brick Viewer during flashing. It should not be
+ * necessary to call it in a normal user program.
+ */
+int imu_v2_read_bricklet_plugin(IMUV2 *imu_v2, char port, uint8_t offset, uint8_t ret_chunk[32]);
+
+/**
+ * \ingroup BrickIMUV2
+ *
  * Returns the UID, the UID where the Brick is connected to,
  * the position, the hardware and firmware version as well as the
  * device identifier.
  * 
- * The position can be '0'-'8' (stack position).
+ * The position is the position in the stack from '0' (bottom) to '8' (top).
  * 
  * The device identifier numbers can be found :ref:`here <device_identifier>`.
  * |device_identifier_constant|

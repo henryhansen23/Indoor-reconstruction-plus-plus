@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 Matthias Bolte <matthias@tinkerforge.com>
+ * Copyright (C) 2012-2014, 2019-2020 Matthias Bolte <matthias@tinkerforge.com>
  * Copyright (C) 2011 Olaf Lüke <olaf@tinkerforge.com>
  *
  * Redistribution and use in source and binary forms of this file,
@@ -17,11 +17,12 @@
 #ifndef __STDC_LIMIT_MACROS
 	#define __STDC_LIMIT_MACROS
 #endif
+
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 
-#if (!defined __cplusplus && defined __GNUC__) || (defined _MSC_VER && _MSC_VER >= 1600)
+#if !defined __cplusplus && (defined __GNUC__ || (defined _MSC_VER && _MSC_VER >= 1600))
 	#include <stdbool.h>
 #endif
 
@@ -52,7 +53,12 @@ enum {
 	E_INVALID_PARAMETER = -9, // error response from device
 	E_NOT_SUPPORTED = -10, // error response from device
 	E_UNKNOWN_ERROR_CODE = -11, // error response from device
-	E_STREAM_OUT_OF_SYNC = -12
+	E_STREAM_OUT_OF_SYNC = -12,
+	E_INVALID_UID = -13,
+	E_NON_ASCII_CHAR_IN_SECRET = -14,
+	E_WRONG_DEVICE_TYPE = -15,
+	E_DEVICE_REPLACED = -16,
+	E_WRONG_RESPONSE_LENGTH = -17
 };
 
 #ifdef IPCON_EXPOSE_MILLISLEEP
@@ -141,7 +147,7 @@ typedef struct {
 #elif defined __GNUC__
 	#ifdef _WIN32
 		// workaround struct packing bug in GCC 4.7 on Windows
-		// http://gcc.gnu.org/bugzilla/show_bug.cgi?id=52991
+		// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52991
 		#define ATTRIBUTE_PACKED __attribute__((gcc_struct, packed))
 	#else
 		#define ATTRIBUTE_PACKED __attribute__((packed))
@@ -207,6 +213,7 @@ typedef void (*DisconnectedCallbackFunction)(uint8_t disconnect_reason,
 
 #ifdef IPCON_EXPOSE_INTERNALS
 
+typedef void (*CallbackFunction)(void);
 typedef void (*CallbackWrapperFunction)(DevicePrivate *device_p, Packet *packet);
 
 #endif
@@ -222,17 +229,30 @@ struct _Device {
 
 #define DEVICE_NUM_FUNCTION_IDS 256
 
+typedef enum {
+	DEVICE_IDENTIFIER_CHECK_PENDING = 0,
+	DEVICE_IDENTIFIER_CHECK_MATCH = 1,
+	DEVICE_IDENTIFIER_CHECK_MISMATCH = 2
+} DeviceIdentifierCheck;
+
 /**
  * \internal
  */
 struct _DevicePrivate {
 	int ref_count;
 
+	bool replaced;
+
 	uint32_t uid; // always host endian
+	bool uid_valid;
 
 	IPConnectionPrivate *ipcon_p;
 
 	uint8_t api_version[3];
+
+	uint16_t device_identifier;
+	Mutex device_identifier_mutex;
+	DeviceIdentifierCheck device_identifier_check; // protected by device_identifier_mutex
 
 	Mutex request_mutex;
 
@@ -245,7 +265,7 @@ struct _DevicePrivate {
 
 	Mutex stream_mutex;
 
-	void *registered_callbacks[DEVICE_NUM_FUNCTION_IDS * 2];
+	CallbackFunction registered_callbacks[DEVICE_NUM_FUNCTION_IDS * 2];
 	void *registered_callback_user_data[DEVICE_NUM_FUNCTION_IDS * 2];
 	CallbackWrapperFunction callback_wrappers[DEVICE_NUM_FUNCTION_IDS];
 	HighLevelCallback high_level_callbacks[DEVICE_NUM_FUNCTION_IDS];
@@ -266,7 +286,8 @@ enum {
  */
 void device_create(Device *device, const char *uid,
                    IPConnectionPrivate *ipcon_p, uint8_t api_version_major,
-                   uint8_t api_version_minor, uint8_t api_version_release);
+                   uint8_t api_version_minor, uint8_t api_version_release,
+                   uint16_t device_identifier);
 
 /**
  * \internal
@@ -294,7 +315,7 @@ int device_set_response_expected_all(DevicePrivate *device_p, bool response_expe
  * \internal
  */
 void device_register_callback(DevicePrivate *device_p, int16_t callback_id,
-                              void *function, void *user_data);
+                              void (*function)(void), void *user_data);
 
 /**
  * \internal
@@ -304,7 +325,13 @@ int device_get_api_version(DevicePrivate *device_p, uint8_t ret_api_version[3]);
 /**
  * \internal
  */
-int device_send_request(DevicePrivate *device_p, Packet *request, Packet *response);
+int device_send_request(DevicePrivate *device_p, Packet *request, Packet *response,
+                        int expected_response_length);
+
+/**
+ * \internal
+ */
+int device_check_validity(DevicePrivate *device_p);
 
 #endif // IPCON_EXPOSE_INTERNALS
 
@@ -405,7 +432,7 @@ struct _IPConnectionPrivate {
 	Mutex devices_ref_mutex; // protects DevicePrivate.ref_count
 	Table devices;
 
-	void *registered_callbacks[IPCON_NUM_CALLBACK_IDS];
+	CallbackFunction registered_callbacks[IPCON_NUM_CALLBACK_IDS];
 	void *registered_callback_user_data[IPCON_NUM_CALLBACK_IDS];
 
 	Mutex socket_mutex;
@@ -479,9 +506,9 @@ int ipcon_disconnect(IPConnection *ipcon);
  * is not enabled at all on the Brick Daemon or the WIFI/Ethernet Extension.
  *
  * For more information about authentication see
- * http://www.tinkerforge.com/en/doc/Tutorials/Tutorial_Authentication/Tutorial.html
+ * https://www.tinkerforge.com/en/doc/Tutorials/Tutorial_Authentication/Tutorial.html
  */
-int ipcon_authenticate(IPConnection *ipcon, const char secret[64]);
+int ipcon_authenticate(IPConnection *ipcon, const char *secret);
 
 /**
  * \ingroup IPConnection
@@ -570,9 +597,14 @@ void ipcon_unwait(IPConnection *ipcon);
  * \c user_data will be passed as the last parameter to the \c function.
  */
 void ipcon_register_callback(IPConnection *ipcon, int16_t callback_id,
-                             void *function, void *user_data);
+                             void (*function)(void), void *user_data);
 
 #ifdef IPCON_EXPOSE_INTERNALS
+
+/**
+ * \internal
+ */
+void ipcon_add_device(IPConnectionPrivate *ipcon_p, DevicePrivate *device_p);
 
 /**
  * \internal
@@ -589,8 +621,7 @@ uint8_t packet_header_get_sequence_number(PacketHeader *header);
 /**
  * \internal
  */
-void packet_header_set_sequence_number(PacketHeader *header,
-                                       uint8_t sequence_number);
+void packet_header_set_sequence_number(PacketHeader *header, uint8_t sequence_number);
 
 /**
  * \internal
@@ -600,8 +631,7 @@ uint8_t packet_header_get_response_expected(PacketHeader *header);
 /**
  * \internal
  */
-void packet_header_set_response_expected(PacketHeader *header,
-                                         uint8_t response_expected);
+void packet_header_set_response_expected(PacketHeader *header, bool response_expected);
 
 /**
  * \internal
@@ -677,6 +707,11 @@ uint64_t leconvert_uint64_from(uint64_t little);
  * \internal
  */
 float leconvert_float_from(float little);
+
+/**
+ * \internal
+ */
+char *string_copy(char *dest, const char *src, size_t n);
 
 #endif // IPCON_EXPOSE_INTERNALS
 

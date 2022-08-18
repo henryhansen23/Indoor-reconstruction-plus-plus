@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 Matthias Bolte <matthias@tinkerforge.com>
+ * Copyright (C) 2012-2016, 2019-2020 Matthias Bolte <matthias@tinkerforge.com>
  * Copyright (C) 2011 Olaf Lüke <olaf@tinkerforge.com>
  *
  * Redistribution and use in source and binary forms of this file,
@@ -13,6 +13,9 @@
 	#endif
 	#ifndef _GNU_SOURCE
 		#define _GNU_SOURCE
+	#endif
+	#ifndef _DEFAULT_SOURCE
+		#define _DEFAULT_SOURCE
 	#endif
 #endif
 
@@ -50,6 +53,11 @@
 	#include <sys/time.h> // gettimeofday
 #endif
 
+#if defined _MSC_VER && _MSC_VER < 1900
+	// snprintf is not available in older MSVC versions
+	#define snprintf _snprintf
+#endif
+
 #define IPCON_EXPOSE_INTERNALS
 #define IPCON_EXPOSE_MILLISLEEP
 
@@ -66,7 +74,7 @@ extern "C" {
 #elif defined __GNUC__
 	#ifdef _WIN32
 		// workaround struct packing bug in GCC 4.7 on Windows
-		// http://gcc.gnu.org/bugzilla/show_bug.cgi?id=52991
+		// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52991
 		#define ATTRIBUTE_PACKED __attribute__((gcc_struct, packed))
 	#else
 		#define ATTRIBUTE_PACKED __attribute__((packed))
@@ -77,7 +85,7 @@ extern "C" {
 
 typedef struct {
 	PacketHeader header;
-} ATTRIBUTE_PACKED Enumerate;
+} ATTRIBUTE_PACKED DeviceEnumerate_Broadcast;
 
 typedef struct {
 	PacketHeader header;
@@ -88,22 +96,36 @@ typedef struct {
 	uint8_t firmware_version[3];
 	uint16_t device_identifier;
 	uint8_t enumeration_type;
-} ATTRIBUTE_PACKED EnumerateCallback;
+} ATTRIBUTE_PACKED DeviceEnumerate_Callback;
 
 typedef struct {
 	PacketHeader header;
-} ATTRIBUTE_PACKED GetAuthenticationNonce;
+} ATTRIBUTE_PACKED DeviceGetIdentity_Request;
+
+typedef struct {
+	PacketHeader header;
+	char uid[8];
+	char connected_uid[8];
+	char position;
+	uint8_t hardware_version[3];
+	uint8_t firmware_version[3];
+	uint16_t device_identifier;
+} ATTRIBUTE_PACKED DeviceGetIdentity_Response;
+
+typedef struct {
+	PacketHeader header;
+} ATTRIBUTE_PACKED BrickDaemonGetAuthenticationNonce_Request;
 
 typedef struct {
 	PacketHeader header;
 	uint8_t server_nonce[4];
-} ATTRIBUTE_PACKED GetAuthenticationNonceResponse;
+} ATTRIBUTE_PACKED BrickDaemonGetAuthenticationNonce_Response;
 
 typedef struct {
 	PacketHeader header;
 	uint8_t client_nonce[4];
 	uint8_t digest[20];
-} ATTRIBUTE_PACKED Authenticate;
+} ATTRIBUTE_PACKED BrickDaemonAuthenticate_Request;
 
 #if defined _MSC_VER || defined __BORLANDC__
 	#pragma pack(pop)
@@ -118,7 +140,7 @@ typedef struct {
 		#endif
 		#if __GNUC_PREREQ(4, 6)
 			#define STATIC_ASSERT(condition, message) \
-				_Static_assert(condition, message)
+				_Static_assert(condition, message);
 		#else
 			#define STATIC_ASSERT(condition, message) // FIXME
 		#endif
@@ -126,12 +148,15 @@ typedef struct {
 		#define STATIC_ASSERT(condition, message) // FIXME
 	#endif
 
-	STATIC_ASSERT(sizeof(PacketHeader) == 8, "PacketHeader has invalid size");
-	STATIC_ASSERT(sizeof(Packet) == 80, "Packet has invalid size");
-	STATIC_ASSERT(sizeof(EnumerateCallback) == 34, "EnumerateCallback has invalid size");
-	STATIC_ASSERT(sizeof(GetAuthenticationNonce) == 8, "GetAuthenticationNonce has invalid size");
-	STATIC_ASSERT(sizeof(GetAuthenticationNonceResponse) == 12, "GetAuthenticationNonceResponse has invalid size");
-	STATIC_ASSERT(sizeof(Authenticate) == 32, "Authenticate has invalid size");
+	STATIC_ASSERT(sizeof(PacketHeader) == 8, "PacketHeader has invalid size")
+	STATIC_ASSERT(sizeof(Packet) == 80, "Packet has invalid size")
+	STATIC_ASSERT(sizeof(DeviceEnumerate_Broadcast) == 8, "DeviceEnumerate_Broadcast has invalid size")
+	STATIC_ASSERT(sizeof(DeviceEnumerate_Callback) == 34, "DeviceEnumerate_Callback has invalid size")
+	STATIC_ASSERT(sizeof(DeviceGetIdentity_Request) == 8, "DeviceGetIdentity_Request has invalid size")
+	STATIC_ASSERT(sizeof(DeviceGetIdentity_Response) == 33, "DeviceGetIdentity_Response has invalid size")
+	STATIC_ASSERT(sizeof(BrickDaemonGetAuthenticationNonce_Request) == 8, "BrickDaemonGetAuthenticationNonce_Request has invalid size")
+	STATIC_ASSERT(sizeof(BrickDaemonGetAuthenticationNonce_Response) == 12, "BrickDaemonGetAuthenticationNonce_Response has invalid size")
+	STATIC_ASSERT(sizeof(BrickDaemonAuthenticate_Request) == 32, "BrickDaemonAuthenticate_Request has invalid size")
 #endif
 
 void millisleep(uint32_t msec) {
@@ -171,9 +196,9 @@ void millisleep(uint32_t msec) {
 #define SHA1_DIGEST_LENGTH 20
 
 typedef struct {
-    uint32_t state[5];
-    uint64_t count;
-    uint8_t buffer[SHA1_BLOCK_LENGTH];
+	uint32_t state[5];
+	uint64_t count;
+	uint8_t buffer[SHA1_BLOCK_LENGTH];
 } SHA1;
 
 #define rol(value, bits) (((value) << (bits)) | ((value) >> (32 - (bits))))
@@ -183,11 +208,11 @@ typedef struct {
 #define blk(i) (block[i&15] = rol(block[(i+13)&15]^block[(i+8)&15]^block[(i+2)&15]^block[i&15],1))
 
 // (R0+R1), R2, R3, R4 are the different operations (rounds) used in SHA1
-#define R0(v,w,x,y,z,i) z+=((w&(x^y))^y)+blk0(i)+0x5A827999+rol(v,5);w=rol(w,30);
-#define R1(v,w,x,y,z,i) z+=((w&(x^y))^y)+blk(i)+0x5A827999+rol(v,5);w=rol(w,30);
-#define R2(v,w,x,y,z,i) z+=(w^x^y)+blk(i)+0x6ED9EBA1+rol(v,5);w=rol(w,30);
-#define R3(v,w,x,y,z,i) z+=(((w|x)&y)|(w&x))+blk(i)+0x8F1BBCDC+rol(v,5);w=rol(w,30);
-#define R4(v,w,x,y,z,i) z+=(w^x^y)+blk(i)+0xCA62C1D6+rol(v,5);w=rol(w,30);
+#define R0(v,w,x,y,z,i) z+=((w&(x^y))^y)+blk0(i)+0x5A827999+rol(v,5);w=rol(w,30)
+#define R1(v,w,x,y,z,i) z+=((w&(x^y))^y)+blk(i)+0x5A827999+rol(v,5);w=rol(w,30)
+#define R2(v,w,x,y,z,i) z+=(w^x^y)+blk(i)+0x6ED9EBA1+rol(v,5);w=rol(w,30)
+#define R3(v,w,x,y,z,i) z+=(((w|x)&y)|(w&x))+blk(i)+0x8F1BBCDC+rol(v,5);w=rol(w,30)
+#define R4(v,w,x,y,z,i) z+=(w^x^y)+blk(i)+0xCA62C1D6+rol(v,5);w=rol(w,30)
 
 // hash a single 512-bit block. this is the core of the algorithm
 static uint32_t sha1_transform(SHA1 *sha1, const uint8_t buffer[SHA1_BLOCK_LENGTH]) {
@@ -238,7 +263,7 @@ static uint32_t sha1_transform(SHA1 *sha1, const uint8_t buffer[SHA1_BLOCK_LENGT
 	// wipe variables
 	a = b = c = d = e = 0;
 
-	return a; // return a to avoid dead-store warning from clang static analyzer
+	return a + b + c + d + e; // return to avoid dead-store warning from clang static analyzer
 }
 
 static void sha1_init(SHA1 *sha1) {
@@ -387,8 +412,8 @@ static int read_uint32_non_blocking(const char *filename, uint32_t *value) {
 
 // this function is not meant to be called often,
 // this function is meant to provide a good random seed value
-uint32_t get_random_uint32(void) {
-	uint32_t r;
+static uint32_t get_random_uint32(void) {
+	uint32_t r = 0;
 	struct timeval tv;
 	uint32_t seconds;
 	uint32_t microseconds;
@@ -486,12 +511,13 @@ static void hmac_sha1(uint8_t *secret, int secret_length,
  *
  *****************************************************************************/
 
-#define BASE58_MAX_STR_SIZE 13
-
 static const char BASE58_ALPHABET[] = \
 	"123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
 
 #if 0
+
+#define BASE58_MAX_STR_SIZE 13
+
 static void base58_encode(uint64_t value, char *str) {
 	uint32_t mod;
 	char reverse_str[BASE58_MAX_STR_SIZE] = {'\0'};
@@ -515,38 +541,80 @@ static void base58_encode(uint64_t value, char *str) {
 		str[k] = '\0';
 	}
 }
+
 #endif
 
-static uint64_t base58_decode(const char *str) {
-	int i;
+// https://www.fefe.de/intof.html
+static bool uint64_add(uint64_t a, uint64_t b, uint64_t *c) {
+	if (UINT64_MAX - a < b) {
+		return false;
+	}
+
+	*c = a + b;
+
+	return true;
+}
+
+static bool uint64_multiply(uint64_t a, uint64_t b, uint64_t *c) {
+	uint64_t a0 = a & UINT32_MAX;
+	uint64_t a1 = a >> 32;
+	uint64_t b0 = b & UINT32_MAX;
+	uint64_t b1 = b >> 32;
+	uint64_t c0;
+	uint64_t c1;
+
+	if (a1 > 0 && b1 > 0) {
+		return false;
+	}
+
+	c1 = a1 * b0 + a0 * b1;
+
+	if (c1 > UINT32_MAX) {
+		return false;
+	}
+
+	c0 = a0 * b0;
+	c1 <<= 32;
+
+	return uint64_add(c1, c0, c);
+}
+
+static bool base58_decode(const char *str, uint64_t *ret_value) {
+	int i = strlen(str) - 1;
 	int k;
+	uint64_t next;
 	uint64_t value = 0;
 	uint64_t base = 1;
 
-	for (i = 0; i < BASE58_MAX_STR_SIZE; i++) {
-		if (str[i] == '\0') {
-			break;
-		}
-	}
+	*ret_value = 0;
 
-	--i;
-
-	for (; i >= 0; i--) {
-		if (str[i] == '\0') {
-			continue;
-		}
-
-		for (k = 0; k < 58; k++) {
+	for (; i >= 0; --i) {
+		for (k = 0; k < 58; ++k) {
 			if (BASE58_ALPHABET[k] == str[i]) {
 				break;
 			}
 		}
 
-		value += k * base;
-		base *= 58;
+		if (k == 58) {
+			return false; // invalid char
+		}
+
+		if (!uint64_multiply(k, base, &next))  {
+			return false; // overflow
+		}
+
+		if (!uint64_add(value, next, &value))  {
+			return false; // overflow
+		}
+
+		if (i > 0 && !uint64_multiply(base, 58, &base))  {
+			return false; // overflow
+		}
 	}
 
-	return value;
+	*ret_value = value;
+
+	return true;
 }
 
 /*****************************************************************************
@@ -975,18 +1043,20 @@ static void table_destroy(Table *table) {
 	mutex_destroy(&table->mutex);
 }
 
-static void table_insert(Table *table, uint32_t key, void *value) {
+static void *table_insert(Table *table, uint32_t key, void *value) {
 	int i;
+	void *replaced_value;
 
 	mutex_lock(&table->mutex);
 
 	for (i = 0; i < table->used; ++i) {
 		if (table->keys[i] == key) {
+			replaced_value = table->values[i];
 			table->values[i] = value;
 
 			mutex_unlock(&table->mutex);
 
-			return;
+			return replaced_value;
 		}
 	}
 
@@ -1002,6 +1072,8 @@ static void table_insert(Table *table, uint32_t key, void *value) {
 	++table->used;
 
 	mutex_unlock(&table->mutex);
+
+	return NULL;
 }
 
 static void table_remove(Table *table, uint32_t key) {
@@ -1153,7 +1225,8 @@ static int queue_get(Queue *queue, int *kind, void **data) {
  *****************************************************************************/
 
 enum {
-	IPCON_FUNCTION_ENUMERATE = 254
+	DEVICE_FUNCTION_ENUMERATE = 254,
+	DEVICE_FUNCTION_GET_IDENTITY = 255
 };
 
 static int ipcon_send_request(IPConnectionPrivate *ipcon_p, Packet *request);
@@ -1162,7 +1235,9 @@ static int ipcon_send_request(IPConnectionPrivate *ipcon_p, Packet *request);
 static void device_destroy(DevicePrivate *device_p) {
 	int i;
 
-	table_remove(&device_p->ipcon_p->devices, device_p->uid);
+	if (!device_p->replaced && device_p->uid_valid) {
+		table_remove(&device_p->ipcon_p->devices, device_p->uid);
+	}
 
 	for (i = 0; i < DEVICE_NUM_FUNCTION_IDS; i++) {
 		free(device_p->high_level_callbacks[i].data);
@@ -1176,12 +1251,15 @@ static void device_destroy(DevicePrivate *device_p) {
 
 	mutex_destroy(&device_p->request_mutex);
 
+	mutex_destroy(&device_p->device_identifier_mutex);
+
 	free(device_p);
 }
 
 void device_create(Device *device, const char *uid_str,
                    IPConnectionPrivate *ipcon_p, uint8_t api_version_major,
-                   uint8_t api_version_minor, uint8_t api_version_release) {
+                   uint8_t api_version_minor, uint8_t api_version_release,
+                   uint16_t device_identifier) {
 	DevicePrivate *device_p;
 	uint64_t uid;
 	uint32_t value1;
@@ -1191,9 +1269,11 @@ void device_create(Device *device, const char *uid_str,
 	device_p = (DevicePrivate *)malloc(sizeof(DevicePrivate));
 	device->p = device_p;
 
-	uid = base58_decode(uid_str);
+	device_p->replaced = false;
 
-	if (uid > 0xFFFFFFFF) {
+	device_p->uid_valid = base58_decode(uid_str, &uid);
+
+	if (device_p->uid_valid && uid > 0xFFFFFFFF) {
 		// convert from 64bit to 32bit
 		value1 = uid & 0xFFFFFFFF;
 		value2 = (uid >> 32) & 0xFFFFFFFF;
@@ -1205,15 +1285,26 @@ void device_create(Device *device, const char *uid_str,
 		uid |= (value2 & 0x3F000000) << 2;
 	}
 
+	if (uid == 0) {
+		device_p->uid_valid = false; // broadcast UID is forbidden
+	}
+
 	device_p->ref_count = 1;
 
-	device_p->uid = uid & 0xFFFFFFFF;
+	device_p->uid = (uint32_t)uid;
 
 	device_p->ipcon_p = ipcon_p;
 
 	device_p->api_version[0] = api_version_major;
 	device_p->api_version[1] = api_version_minor;
 	device_p->api_version[2] = api_version_release;
+
+	// device identifier
+	device_p->device_identifier = device_identifier;
+
+	mutex_create(&device_p->device_identifier_mutex);
+
+	device_p->device_identifier_check = DEVICE_IDENTIFIER_CHECK_PENDING;
 
 	// request
 	mutex_create(&device_p->request_mutex);
@@ -1247,9 +1338,6 @@ void device_create(Device *device, const char *uid_str,
 		device_p->high_level_callbacks[i].data = NULL;
 		device_p->high_level_callbacks[i].length = 0;
 	}
-
-	// add to IPConnection
-	table_insert(&ipcon_p->devices, device_p->uid, device_p);
 }
 
 void device_release(DevicePrivate *device_p) {
@@ -1316,7 +1404,7 @@ int device_set_response_expected_all(DevicePrivate *device_p, bool response_expe
 }
 
 void device_register_callback(DevicePrivate *device_p, int16_t callback_id,
-                              void *function, void *user_data) {
+                              void (*function)(void), void *user_data) {
 	if (callback_id <= -DEVICE_NUM_FUNCTION_IDS || callback_id >= DEVICE_NUM_FUNCTION_IDS) {
 		return;
 	}
@@ -1333,7 +1421,9 @@ int device_get_api_version(DevicePrivate *device_p, uint8_t ret_api_version[3]) 
 	return E_OK;
 }
 
-int device_send_request(DevicePrivate *device_p, Packet *request, Packet *response) {
+// NOTE: assumes that device_check_validity was successful
+int device_send_request(DevicePrivate *device_p, Packet *request, Packet *response,
+                        int expected_response_length) {
 	int ret = E_OK;
 	uint8_t sequence_number = packet_header_get_sequence_number(&request->header);
 	uint8_t response_expected = packet_header_get_response_expected(&request->header);
@@ -1377,8 +1467,14 @@ int device_send_request(DevicePrivate *device_p, Packet *request, Packet *respon
 			    packet_header_get_sequence_number(&device_p->response_packet.header) != sequence_number) {
 				ret = E_TIMEOUT;
 			} else if (error_code == 0) {
-				// no error
-				if (response != NULL) {
+				if (expected_response_length == 0) {
+					// setter with response-expected enabled
+					expected_response_length = sizeof(PacketHeader);
+				}
+
+				if (device_p->response_packet.header.length != expected_response_length) {
+					ret = E_WRONG_RESPONSE_LENGTH;
+				} else if (response != NULL) {
 					memcpy(response, &device_p->response_packet,
 					       device_p->response_packet.header.length);
 				}
@@ -1399,6 +1495,63 @@ int device_send_request(DevicePrivate *device_p, Packet *request, Packet *respon
 	return ret;
 }
 
+int device_check_validity(DevicePrivate *device_p) {
+	DeviceGetIdentity_Request request;
+	DeviceGetIdentity_Response response;
+	uint16_t device_identifier;
+	int ret;
+
+	if (device_p->replaced) {
+		return E_DEVICE_REPLACED;
+	}
+
+	if (!device_p->uid_valid) {
+		return E_INVALID_UID;
+	}
+
+	if (device_p->device_identifier_check == DEVICE_IDENTIFIER_CHECK_PENDING) {
+		mutex_lock(&device_p->device_identifier_mutex);
+
+		if (device_p->device_identifier_check == DEVICE_IDENTIFIER_CHECK_PENDING) {
+			ret = packet_header_create(&request.header, sizeof(request), DEVICE_FUNCTION_GET_IDENTITY, device_p->ipcon_p, device_p);
+
+			if (ret < 0) {
+				mutex_unlock(&device_p->device_identifier_mutex);
+
+				return ret;
+			}
+
+			// initialize to 0 to stop the clang static analyzer from warning about accessing
+			// uninitialized memory when accessing the device_identifier member later on
+			memset(&response, 0, sizeof(response));
+
+			ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
+
+			if (ret < 0) {
+				mutex_unlock(&device_p->device_identifier_mutex);
+
+				return ret;
+			}
+
+			device_identifier = leconvert_uint16_from(response.device_identifier);
+
+			if (device_identifier == device_p->device_identifier) {
+				device_p->device_identifier_check = DEVICE_IDENTIFIER_CHECK_MATCH;
+			} else {
+				device_p->device_identifier_check = DEVICE_IDENTIFIER_CHECK_MISMATCH;
+			}
+		}
+
+		mutex_unlock(&device_p->device_identifier_mutex);
+	}
+
+	if (device_p->device_identifier_check == DEVICE_IDENTIFIER_CHECK_MISMATCH) {
+		return E_WRONG_DEVICE_TYPE;
+	}
+
+	return E_OK; // DEVICE_IDENTIFIER_CHECK_MATCH
+}
+
 /*****************************************************************************
  *
  *                                 Brick Daemon
@@ -1411,14 +1564,17 @@ enum {
 };
 
 static void brickd_create(BrickDaemon *brickd, const char *uid, IPConnection *ipcon) {
+	IPConnectionPrivate *ipcon_p = ipcon->p;
 	DevicePrivate *device_p;
 
-	device_create(brickd, uid, ipcon->p, 2, 0, 0);
+	device_create(brickd, uid, ipcon_p, 2, 0, 0, 0);
 
 	device_p = brickd->p;
 
 	device_p->response_expected[BRICK_DAEMON_FUNCTION_GET_AUTHENTICATION_NONCE] = DEVICE_RESPONSE_EXPECTED_ALWAYS_TRUE;
 	device_p->response_expected[BRICK_DAEMON_FUNCTION_AUTHENTICATE] = DEVICE_RESPONSE_EXPECTED_TRUE;
+
+	ipcon_add_device(ipcon_p, device_p);
 }
 
 static void brickd_destroy(BrickDaemon *brickd) {
@@ -1427,8 +1583,8 @@ static void brickd_destroy(BrickDaemon *brickd) {
 
 static int brickd_get_authentication_nonce(BrickDaemon *brickd, uint8_t ret_server_nonce[4]) {
 	DevicePrivate *device_p = brickd->p;
-	GetAuthenticationNonce request;
-	GetAuthenticationNonceResponse response;
+	BrickDaemonGetAuthenticationNonce_Request request;
+	BrickDaemonGetAuthenticationNonce_Response response;
 	int ret;
 
 	ret = packet_header_create(&request.header, sizeof(request), BRICK_DAEMON_FUNCTION_GET_AUTHENTICATION_NONCE, device_p->ipcon_p, device_p);
@@ -1437,7 +1593,7 @@ static int brickd_get_authentication_nonce(BrickDaemon *brickd, uint8_t ret_serv
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1450,7 +1606,7 @@ static int brickd_get_authentication_nonce(BrickDaemon *brickd, uint8_t ret_serv
 
 static int brickd_authenticate(BrickDaemon *brickd, uint8_t client_nonce[4], uint8_t digest[20]) {
 	DevicePrivate *device_p = brickd->p;
-	Authenticate request;
+	BrickDaemonAuthenticate_Request request;
 	int ret;
 
 	ret = packet_header_create(&request.header, sizeof(request), BRICK_DAEMON_FUNCTION_AUTHENTICATE, device_p->ipcon_p, device_p);
@@ -1462,7 +1618,7 @@ static int brickd_authenticate(BrickDaemon *brickd, uint8_t client_nonce[4], uin
 	memcpy(request.client_nonce, client_nonce, 4 * sizeof(uint8_t));
 	memcpy(request.digest, digest, 20 * sizeof(uint8_t));
 
-	ret = device_send_request(device_p, (Packet *)&request, NULL);
+	ret = device_send_request(device_p, (Packet *)&request, NULL, 0);
 
 	return ret;
 }
@@ -1487,6 +1643,10 @@ static void ipcon_disconnect_unlocked(IPConnectionPrivate *ipcon_p);
 static DevicePrivate *ipcon_acquire_device(IPConnectionPrivate *ipcon_p, uint32_t uid) {
 	DevicePrivate *device_p;
 
+	if (uid == 0) {
+		return NULL;
+	}
+
 	mutex_lock(&ipcon_p->devices_ref_mutex);
 
 	device_p = (DevicePrivate *)table_get(&ipcon_p->devices, uid);
@@ -1508,7 +1668,7 @@ static void ipcon_dispatch_meta(IPConnectionPrivate *ipcon_p, Meta *meta) {
 
 	if (meta->function_id == IPCON_CALLBACK_CONNECTED) {
 		if (ipcon_p->registered_callbacks[IPCON_CALLBACK_CONNECTED] != NULL) {
-			*(void **)(&connected_callback_function) = ipcon_p->registered_callbacks[IPCON_CALLBACK_CONNECTED];
+			connected_callback_function = (ConnectedCallbackFunction)ipcon_p->registered_callbacks[IPCON_CALLBACK_CONNECTED];
 			user_data = ipcon_p->registered_callback_user_data[IPCON_CALLBACK_CONNECTED];
 
 			connected_callback_function(meta->parameter, user_data);
@@ -1543,7 +1703,7 @@ static void ipcon_dispatch_meta(IPConnectionPrivate *ipcon_p, Meta *meta) {
 		millisleep(100);
 
 		if (ipcon_p->registered_callbacks[IPCON_CALLBACK_DISCONNECTED] != NULL) {
-			*(void **)(&disconnected_callback_function) = ipcon_p->registered_callbacks[IPCON_CALLBACK_DISCONNECTED];
+			disconnected_callback_function = (DisconnectedCallbackFunction)ipcon_p->registered_callbacks[IPCON_CALLBACK_DISCONNECTED];
 			user_data = ipcon_p->registered_callback_user_data[IPCON_CALLBACK_DISCONNECTED];
 
 			disconnected_callback_function(meta->parameter, user_data);
@@ -1584,15 +1744,19 @@ static void ipcon_dispatch_meta(IPConnectionPrivate *ipcon_p, Meta *meta) {
 static void ipcon_dispatch_packet(IPConnectionPrivate *ipcon_p, Packet *packet) {
 	EnumerateCallbackFunction enumerate_callback_function;
 	void *user_data;
-	EnumerateCallback *enumerate_callback;
+	DeviceEnumerate_Callback *enumerate_callback;
 	DevicePrivate *device_p;
 	CallbackWrapperFunction callback_wrapper_function;
 
 	if (packet->header.function_id == IPCON_CALLBACK_ENUMERATE) {
 		if (ipcon_p->registered_callbacks[IPCON_CALLBACK_ENUMERATE] != NULL) {
-			*(void **)(&enumerate_callback_function) = ipcon_p->registered_callbacks[IPCON_CALLBACK_ENUMERATE];
+			if (packet->header.length != sizeof(DeviceEnumerate_Callback)) {
+				return; // silently ignoring callback with wrong length
+			}
+
+			enumerate_callback_function = (EnumerateCallbackFunction)ipcon_p->registered_callbacks[IPCON_CALLBACK_ENUMERATE];
 			user_data = ipcon_p->registered_callback_user_data[IPCON_CALLBACK_ENUMERATE];
-			enumerate_callback = (EnumerateCallback *)packet;
+			enumerate_callback = (DeviceEnumerate_Callback *)packet;
 
 			enumerate_callback_function(enumerate_callback->uid,
 			                            enumerate_callback->connected_uid,
@@ -1616,6 +1780,12 @@ static void ipcon_dispatch_packet(IPConnectionPrivate *ipcon_p, Packet *packet) 
 			device_release(device_p);
 
 			return;
+		}
+
+		if (device_check_validity(device_p) < 0) {
+			device_release(device_p);
+
+			return; // silently ignoring callback for invalid device
 		}
 
 		callback_wrapper_function(device_p, packet);
@@ -1651,7 +1821,7 @@ static void ipcon_callback_loop(void *opaque) {
 
 	while (true) {
 		if (queue_get(&callback->queue, &kind, &data) < 0) {
-			// FIXME: what to do here? try again? exit?
+			// FIXME: what to do here? try again? exit? -> yes try again, see https://github.com/Tinkerforge/brickd/issues/21
 			break;
 		}
 
@@ -2048,8 +2218,7 @@ static int ipcon_send_request(IPConnectionPrivate *ipcon_p, Packet *request) {
 
 	if (ret == E_OK) {
 		if (socket_send(ipcon_p->socket, request, request->header.length) < 0) {
-			ipcon_handle_disconnect_by_peer(ipcon_p, IPCON_DISCONNECT_REASON_ERROR,
-			                                0, true);
+			ipcon_handle_disconnect_by_peer(ipcon_p, IPCON_DISCONNECT_REASON_ERROR, 0, true);
 
 			ret = E_NOT_CONNECTED;
 		} else {
@@ -2218,11 +2387,21 @@ int ipcon_disconnect(IPConnection *ipcon) {
 	return E_OK;
 }
 
-int ipcon_authenticate(IPConnection *ipcon, const char secret[64]) {
+int ipcon_authenticate(IPConnection *ipcon, const char *secret) {
 	IPConnectionPrivate *ipcon_p = ipcon->p;
 	int ret;
 	uint32_t nonces[2]; // server, client
 	uint8_t digest[SHA1_DIGEST_LENGTH];
+	int i;
+	int secret_length;
+
+	secret_length = string_length(secret, IPCON_MAX_SECRET_LENGTH);
+
+	for (i = 0; i < secret_length; ++i) {
+		if ((secret[i] & 0x80) != 0) {
+			return E_NON_ASCII_CHAR_IN_SECRET;
+		}
+	}
 
 	mutex_lock(&ipcon_p->authentication_mutex);
 
@@ -2240,7 +2419,7 @@ int ipcon_authenticate(IPConnection *ipcon, const char secret[64]) {
 
 	nonces[1] = ipcon_p->next_authentication_nonce++;
 
-	hmac_sha1((uint8_t *)secret, string_length(secret, IPCON_MAX_SECRET_LENGTH),
+	hmac_sha1((uint8_t *)secret, secret_length,
 	          (uint8_t *)nonces, sizeof(nonces), digest);
 
 	ret = brickd_authenticate(&ipcon_p->brickd, (uint8_t *)&nonces[1], digest);
@@ -2293,11 +2472,11 @@ uint32_t ipcon_get_timeout(IPConnection *ipcon) { // in msec
 
 int ipcon_enumerate(IPConnection *ipcon) {
 	IPConnectionPrivate *ipcon_p = ipcon->p;
-	Enumerate enumerate;
+	DeviceEnumerate_Broadcast enumerate;
 	int ret;
 
-	ret = packet_header_create(&enumerate.header, sizeof(Enumerate),
-	                           IPCON_FUNCTION_ENUMERATE, ipcon_p, NULL);
+	ret = packet_header_create(&enumerate.header, sizeof(DeviceEnumerate_Broadcast),
+	                           DEVICE_FUNCTION_ENUMERATE, ipcon_p, NULL);
 
 	if (ret < 0) {
 		return ret;
@@ -2315,7 +2494,7 @@ void ipcon_unwait(IPConnection *ipcon) {
 }
 
 void ipcon_register_callback(IPConnection *ipcon, int16_t callback_id,
-                             void *function, void *user_data) {
+                             void (*function)(void), void *user_data) {
 	IPConnectionPrivate *ipcon_p = ipcon->p;
 
 	if (callback_id <= -1 || callback_id >= IPCON_NUM_CALLBACK_IDS) {
@@ -2324,6 +2503,18 @@ void ipcon_register_callback(IPConnection *ipcon, int16_t callback_id,
 
 	ipcon_p->registered_callbacks[callback_id] = function;
 	ipcon_p->registered_callback_user_data[callback_id] = user_data;
+}
+
+void ipcon_add_device(IPConnectionPrivate *ipcon_p, DevicePrivate *device_p) {
+	DevicePrivate *replaced_device_p;
+
+	if (device_p->uid_valid) {
+		replaced_device_p = (DevicePrivate *)table_insert(&ipcon_p->devices, device_p->uid, device_p);
+
+		if (replaced_device_p != NULL) {
+			replaced_device_p->replaced = true;
+		}
+	}
 }
 
 int packet_header_create(PacketHeader *header, uint8_t length,
@@ -2352,7 +2543,7 @@ int packet_header_create(PacketHeader *header, uint8_t length,
 
 	if (device_p != NULL) {
 		ret = device_get_response_expected(device_p, function_id, &response_expected);
-		packet_header_set_response_expected(header, response_expected ? 1 : 0);
+		packet_header_set_response_expected(header, response_expected);
 	}
 
 	return ret;
@@ -2362,8 +2553,8 @@ uint8_t packet_header_get_sequence_number(PacketHeader *header) {
 	return (header->sequence_number_and_options >> 4) & 0x0F;
 }
 
-void packet_header_set_sequence_number(PacketHeader *header,
-                                       uint8_t sequence_number) {
+void packet_header_set_sequence_number(PacketHeader *header, uint8_t sequence_number) {
+	header->sequence_number_and_options &= ~0xF0;
 	header->sequence_number_and_options |= (sequence_number << 4) & 0xF0;
 }
 
@@ -2371,9 +2562,12 @@ uint8_t packet_header_get_response_expected(PacketHeader *header) {
 	return (header->sequence_number_and_options >> 3) & 0x01;
 }
 
-void packet_header_set_response_expected(PacketHeader *header,
-                                         uint8_t response_expected) {
-	header->sequence_number_and_options |= (response_expected << 3) & 0x08;
+void packet_header_set_response_expected(PacketHeader *header, bool response_expected) {
+	if (response_expected) {
+		header->sequence_number_and_options |= 0x01 << 3;
+	} else {
+		header->sequence_number_and_options &= ~(0x01 << 3);
+	}
 }
 
 uint8_t packet_header_get_error_code(PacketHeader *header) {
@@ -2500,6 +2694,23 @@ float leconvert_float_from(float little) {
 
 	return c.f;
 }
+
+char *string_copy(char *dest, const char *src, size_t n) {
+	size_t idx = 0;
+
+	while(src[idx] != '\0' && idx < n) {
+		dest[idx] = src[idx];
+		++idx;
+	}
+
+	while (idx < n) {
+		dest[idx] = '\0';
+		++idx;
+	}
+
+	return dest;
+}
+
 
 #ifdef __cplusplus
 }

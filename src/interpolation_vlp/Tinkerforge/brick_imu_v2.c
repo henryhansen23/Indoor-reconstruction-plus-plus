@@ -1,7 +1,7 @@
 /* ***********************************************************
- * This file was automatically generated on 2019-01-29.      *
+ * This file was automatically generated on 2022-05-11.      *
  *                                                           *
- * C/C++ Bindings Version 2.1.24                             *
+ * C/C++ Bindings Version 2.1.33                             *
  *                                                           *
  * If you have a bugfix for this file and want to commit it, *
  * please fix the bug in the generator. You can find a link  *
@@ -46,7 +46,7 @@ typedef void (*AllData_CallbackFunction)(int16_t acceleration[3], int16_t magnet
 #elif defined __GNUC__
 	#ifdef _WIN32
 		// workaround struct packing bug in GCC 4.7 on Windows
-		// http://gcc.gnu.org/bugzilla/show_bug.cgi?id=52991
+		// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52991
 		#define ATTRIBUTE_PACKED __attribute__((gcc_struct, packed))
 	#else
 		#define ATTRIBUTE_PACKED __attribute__((packed))
@@ -514,6 +514,24 @@ typedef struct {
 
 typedef struct {
 	PacketHeader header;
+	char port;
+	uint8_t offset;
+	uint8_t chunk[32];
+} ATTRIBUTE_PACKED WriteBrickletPlugin_Request;
+
+typedef struct {
+	PacketHeader header;
+	char port;
+	uint8_t offset;
+} ATTRIBUTE_PACKED ReadBrickletPlugin_Request;
+
+typedef struct {
+	PacketHeader header;
+	uint8_t chunk[32];
+} ATTRIBUTE_PACKED ReadBrickletPlugin_Response;
+
+typedef struct {
+	PacketHeader header;
 } ATTRIBUTE_PACKED GetIdentity_Request;
 
 typedef struct {
@@ -533,10 +551,17 @@ typedef struct {
 
 static void imu_v2_callback_wrapper_acceleration(DevicePrivate *device_p, Packet *packet) {
 	Acceleration_CallbackFunction callback_function;
-	void *user_data = device_p->registered_callback_user_data[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_ACCELERATION];
-	Acceleration_Callback *callback = (Acceleration_Callback *)packet;
+	void *user_data;
+	Acceleration_Callback *callback;
 
-	*(void **)(&callback_function) = device_p->registered_callbacks[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_ACCELERATION];
+	if (packet->header.length != sizeof(Acceleration_Callback)) {
+		return; // silently ignoring callback with wrong length
+	}
+
+	callback_function = (Acceleration_CallbackFunction)device_p->registered_callbacks[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_ACCELERATION];
+	user_data = device_p->registered_callback_user_data[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_ACCELERATION];
+	callback = (Acceleration_Callback *)packet;
+	(void)callback; // avoid unused variable warning
 
 	if (callback_function == NULL) {
 		return;
@@ -551,10 +576,17 @@ static void imu_v2_callback_wrapper_acceleration(DevicePrivate *device_p, Packet
 
 static void imu_v2_callback_wrapper_magnetic_field(DevicePrivate *device_p, Packet *packet) {
 	MagneticField_CallbackFunction callback_function;
-	void *user_data = device_p->registered_callback_user_data[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_MAGNETIC_FIELD];
-	MagneticField_Callback *callback = (MagneticField_Callback *)packet;
+	void *user_data;
+	MagneticField_Callback *callback;
 
-	*(void **)(&callback_function) = device_p->registered_callbacks[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_MAGNETIC_FIELD];
+	if (packet->header.length != sizeof(MagneticField_Callback)) {
+		return; // silently ignoring callback with wrong length
+	}
+
+	callback_function = (MagneticField_CallbackFunction)device_p->registered_callbacks[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_MAGNETIC_FIELD];
+	user_data = device_p->registered_callback_user_data[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_MAGNETIC_FIELD];
+	callback = (MagneticField_Callback *)packet;
+	(void)callback; // avoid unused variable warning
 
 	if (callback_function == NULL) {
 		return;
@@ -569,10 +601,17 @@ static void imu_v2_callback_wrapper_magnetic_field(DevicePrivate *device_p, Pack
 
 static void imu_v2_callback_wrapper_angular_velocity(DevicePrivate *device_p, Packet *packet) {
 	AngularVelocity_CallbackFunction callback_function;
-	void *user_data = device_p->registered_callback_user_data[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_ANGULAR_VELOCITY];
-	AngularVelocity_Callback *callback = (AngularVelocity_Callback *)packet;
+	void *user_data;
+	AngularVelocity_Callback *callback;
 
-	*(void **)(&callback_function) = device_p->registered_callbacks[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_ANGULAR_VELOCITY];
+	if (packet->header.length != sizeof(AngularVelocity_Callback)) {
+		return; // silently ignoring callback with wrong length
+	}
+
+	callback_function = (AngularVelocity_CallbackFunction)device_p->registered_callbacks[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_ANGULAR_VELOCITY];
+	user_data = device_p->registered_callback_user_data[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_ANGULAR_VELOCITY];
+	callback = (AngularVelocity_Callback *)packet;
+	(void)callback; // avoid unused variable warning
 
 	if (callback_function == NULL) {
 		return;
@@ -587,10 +626,17 @@ static void imu_v2_callback_wrapper_angular_velocity(DevicePrivate *device_p, Pa
 
 static void imu_v2_callback_wrapper_temperature(DevicePrivate *device_p, Packet *packet) {
 	Temperature_CallbackFunction callback_function;
-	void *user_data = device_p->registered_callback_user_data[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_TEMPERATURE];
-	Temperature_Callback *callback = (Temperature_Callback *)packet;
+	void *user_data;
+	Temperature_Callback *callback;
 
-	*(void **)(&callback_function) = device_p->registered_callbacks[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_TEMPERATURE];
+	if (packet->header.length != sizeof(Temperature_Callback)) {
+		return; // silently ignoring callback with wrong length
+	}
+
+	callback_function = (Temperature_CallbackFunction)device_p->registered_callbacks[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_TEMPERATURE];
+	user_data = device_p->registered_callback_user_data[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_TEMPERATURE];
+	callback = (Temperature_Callback *)packet;
+	(void)callback; // avoid unused variable warning
 
 	if (callback_function == NULL) {
 		return;
@@ -601,10 +647,17 @@ static void imu_v2_callback_wrapper_temperature(DevicePrivate *device_p, Packet 
 
 static void imu_v2_callback_wrapper_linear_acceleration(DevicePrivate *device_p, Packet *packet) {
 	LinearAcceleration_CallbackFunction callback_function;
-	void *user_data = device_p->registered_callback_user_data[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_LINEAR_ACCELERATION];
-	LinearAcceleration_Callback *callback = (LinearAcceleration_Callback *)packet;
+	void *user_data;
+	LinearAcceleration_Callback *callback;
 
-	*(void **)(&callback_function) = device_p->registered_callbacks[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_LINEAR_ACCELERATION];
+	if (packet->header.length != sizeof(LinearAcceleration_Callback)) {
+		return; // silently ignoring callback with wrong length
+	}
+
+	callback_function = (LinearAcceleration_CallbackFunction)device_p->registered_callbacks[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_LINEAR_ACCELERATION];
+	user_data = device_p->registered_callback_user_data[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_LINEAR_ACCELERATION];
+	callback = (LinearAcceleration_Callback *)packet;
+	(void)callback; // avoid unused variable warning
 
 	if (callback_function == NULL) {
 		return;
@@ -619,10 +672,17 @@ static void imu_v2_callback_wrapper_linear_acceleration(DevicePrivate *device_p,
 
 static void imu_v2_callback_wrapper_gravity_vector(DevicePrivate *device_p, Packet *packet) {
 	GravityVector_CallbackFunction callback_function;
-	void *user_data = device_p->registered_callback_user_data[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_GRAVITY_VECTOR];
-	GravityVector_Callback *callback = (GravityVector_Callback *)packet;
+	void *user_data;
+	GravityVector_Callback *callback;
 
-	*(void **)(&callback_function) = device_p->registered_callbacks[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_GRAVITY_VECTOR];
+	if (packet->header.length != sizeof(GravityVector_Callback)) {
+		return; // silently ignoring callback with wrong length
+	}
+
+	callback_function = (GravityVector_CallbackFunction)device_p->registered_callbacks[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_GRAVITY_VECTOR];
+	user_data = device_p->registered_callback_user_data[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_GRAVITY_VECTOR];
+	callback = (GravityVector_Callback *)packet;
+	(void)callback; // avoid unused variable warning
 
 	if (callback_function == NULL) {
 		return;
@@ -637,10 +697,17 @@ static void imu_v2_callback_wrapper_gravity_vector(DevicePrivate *device_p, Pack
 
 static void imu_v2_callback_wrapper_orientation(DevicePrivate *device_p, Packet *packet) {
 	Orientation_CallbackFunction callback_function;
-	void *user_data = device_p->registered_callback_user_data[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_ORIENTATION];
-	Orientation_Callback *callback = (Orientation_Callback *)packet;
+	void *user_data;
+	Orientation_Callback *callback;
 
-	*(void **)(&callback_function) = device_p->registered_callbacks[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_ORIENTATION];
+	if (packet->header.length != sizeof(Orientation_Callback)) {
+		return; // silently ignoring callback with wrong length
+	}
+
+	callback_function = (Orientation_CallbackFunction)device_p->registered_callbacks[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_ORIENTATION];
+	user_data = device_p->registered_callback_user_data[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_ORIENTATION];
+	callback = (Orientation_Callback *)packet;
+	(void)callback; // avoid unused variable warning
 
 	if (callback_function == NULL) {
 		return;
@@ -655,10 +722,17 @@ static void imu_v2_callback_wrapper_orientation(DevicePrivate *device_p, Packet 
 
 static void imu_v2_callback_wrapper_quaternion(DevicePrivate *device_p, Packet *packet) {
 	Quaternion_CallbackFunction callback_function;
-	void *user_data = device_p->registered_callback_user_data[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_QUATERNION];
-	Quaternion_Callback *callback = (Quaternion_Callback *)packet;
+	void *user_data;
+	Quaternion_Callback *callback;
 
-	*(void **)(&callback_function) = device_p->registered_callbacks[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_QUATERNION];
+	if (packet->header.length != sizeof(Quaternion_Callback)) {
+		return; // silently ignoring callback with wrong length
+	}
+
+	callback_function = (Quaternion_CallbackFunction)device_p->registered_callbacks[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_QUATERNION];
+	user_data = device_p->registered_callback_user_data[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_QUATERNION];
+	callback = (Quaternion_Callback *)packet;
+	(void)callback; // avoid unused variable warning
 
 	if (callback_function == NULL) {
 		return;
@@ -674,31 +748,47 @@ static void imu_v2_callback_wrapper_quaternion(DevicePrivate *device_p, Packet *
 
 static void imu_v2_callback_wrapper_all_data(DevicePrivate *device_p, Packet *packet) {
 	AllData_CallbackFunction callback_function;
-	void *user_data = device_p->registered_callback_user_data[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_ALL_DATA];
+	void *user_data;
+	AllData_Callback *callback;
 	int i;
-	AllData_Callback *callback = (AllData_Callback *)packet;
+	int16_t aligned_acceleration[3];
+	int16_t aligned_magnetic_field[3];
+	int16_t aligned_angular_velocity[3];
+	int16_t aligned_euler_angle[3];
+	int16_t aligned_quaternion[4];
+	int16_t aligned_linear_acceleration[3];
+	int16_t aligned_gravity_vector[3];
 
-	*(void **)(&callback_function) = device_p->registered_callbacks[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_ALL_DATA];
+
+	if (packet->header.length != sizeof(AllData_Callback)) {
+		return; // silently ignoring callback with wrong length
+	}
+
+	callback_function = (AllData_CallbackFunction)device_p->registered_callbacks[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_ALL_DATA];
+	user_data = device_p->registered_callback_user_data[DEVICE_NUM_FUNCTION_IDS + IMU_V2_CALLBACK_ALL_DATA];
+	callback = (AllData_Callback *)packet;
+	(void)callback; // avoid unused variable warning
 
 	if (callback_function == NULL) {
 		return;
 	}
 
-	for (i = 0; i < 3; i++) callback->acceleration[i] = leconvert_int16_from(callback->acceleration[i]);
-	for (i = 0; i < 3; i++) callback->magnetic_field[i] = leconvert_int16_from(callback->magnetic_field[i]);
-	for (i = 0; i < 3; i++) callback->angular_velocity[i] = leconvert_int16_from(callback->angular_velocity[i]);
-	for (i = 0; i < 3; i++) callback->euler_angle[i] = leconvert_int16_from(callback->euler_angle[i]);
-	for (i = 0; i < 4; i++) callback->quaternion[i] = leconvert_int16_from(callback->quaternion[i]);
-	for (i = 0; i < 3; i++) callback->linear_acceleration[i] = leconvert_int16_from(callback->linear_acceleration[i]);
-	for (i = 0; i < 3; i++) callback->gravity_vector[i] = leconvert_int16_from(callback->gravity_vector[i]);
+	for (i = 0; i < 3; i++) aligned_acceleration[i] = leconvert_int16_from(callback->acceleration[i]);
+	for (i = 0; i < 3; i++) aligned_magnetic_field[i] = leconvert_int16_from(callback->magnetic_field[i]);
+	for (i = 0; i < 3; i++) aligned_angular_velocity[i] = leconvert_int16_from(callback->angular_velocity[i]);
+	for (i = 0; i < 3; i++) aligned_euler_angle[i] = leconvert_int16_from(callback->euler_angle[i]);
+	for (i = 0; i < 4; i++) aligned_quaternion[i] = leconvert_int16_from(callback->quaternion[i]);
+	for (i = 0; i < 3; i++) aligned_linear_acceleration[i] = leconvert_int16_from(callback->linear_acceleration[i]);
+	for (i = 0; i < 3; i++) aligned_gravity_vector[i] = leconvert_int16_from(callback->gravity_vector[i]);
 
-	callback_function(callback->acceleration, callback->magnetic_field, callback->angular_velocity, callback->euler_angle, callback->quaternion, callback->linear_acceleration, callback->gravity_vector, callback->temperature, callback->calibration_status, user_data);
+	callback_function(aligned_acceleration, aligned_magnetic_field, aligned_angular_velocity, aligned_euler_angle, aligned_quaternion, aligned_linear_acceleration, aligned_gravity_vector, callback->temperature, callback->calibration_status, user_data);
 }
 
 void imu_v2_create(IMUV2 *imu_v2, const char *uid, IPConnection *ipcon) {
+	IPConnectionPrivate *ipcon_p = ipcon->p;
 	DevicePrivate *device_p;
 
-	device_create(imu_v2, uid, ipcon->p, 2, 0, 3);
+	device_create(imu_v2, uid, ipcon_p, 2, 0, 3, IMU_V2_DEVICE_IDENTIFIER);
 
 	device_p = imu_v2->p;
 
@@ -749,6 +839,8 @@ void imu_v2_create(IMUV2 *imu_v2, const char *uid, IPConnection *ipcon) {
 	device_p->response_expected[IMU_V2_FUNCTION_GET_PROTOCOL1_BRICKLET_NAME] = DEVICE_RESPONSE_EXPECTED_ALWAYS_TRUE;
 	device_p->response_expected[IMU_V2_FUNCTION_GET_CHIP_TEMPERATURE] = DEVICE_RESPONSE_EXPECTED_ALWAYS_TRUE;
 	device_p->response_expected[IMU_V2_FUNCTION_RESET] = DEVICE_RESPONSE_EXPECTED_FALSE;
+	device_p->response_expected[IMU_V2_FUNCTION_WRITE_BRICKLET_PLUGIN] = DEVICE_RESPONSE_EXPECTED_FALSE;
+	device_p->response_expected[IMU_V2_FUNCTION_READ_BRICKLET_PLUGIN] = DEVICE_RESPONSE_EXPECTED_ALWAYS_TRUE;
 	device_p->response_expected[IMU_V2_FUNCTION_GET_IDENTITY] = DEVICE_RESPONSE_EXPECTED_ALWAYS_TRUE;
 
 	device_p->callback_wrappers[IMU_V2_CALLBACK_ACCELERATION] = imu_v2_callback_wrapper_acceleration;
@@ -761,6 +853,7 @@ void imu_v2_create(IMUV2 *imu_v2, const char *uid, IPConnection *ipcon) {
 	device_p->callback_wrappers[IMU_V2_CALLBACK_QUATERNION] = imu_v2_callback_wrapper_quaternion;
 	device_p->callback_wrappers[IMU_V2_CALLBACK_ALL_DATA] = imu_v2_callback_wrapper_all_data;
 
+	ipcon_add_device(ipcon_p, device_p);
 }
 
 void imu_v2_destroy(IMUV2 *imu_v2) {
@@ -779,7 +872,7 @@ int imu_v2_set_response_expected_all(IMUV2 *imu_v2, bool response_expected) {
 	return device_set_response_expected_all(imu_v2->p, response_expected);
 }
 
-void imu_v2_register_callback(IMUV2 *imu_v2, int16_t callback_id, void *function, void *user_data) {
+void imu_v2_register_callback(IMUV2 *imu_v2, int16_t callback_id, void (*function)(void), void *user_data) {
 	device_register_callback(imu_v2->p, callback_id, function, user_data);
 }
 
@@ -793,13 +886,19 @@ int imu_v2_get_acceleration(IMUV2 *imu_v2, int16_t *ret_x, int16_t *ret_y, int16
 	GetAcceleration_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_ACCELERATION, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -818,13 +917,19 @@ int imu_v2_get_magnetic_field(IMUV2 *imu_v2, int16_t *ret_x, int16_t *ret_y, int
 	GetMagneticField_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_MAGNETIC_FIELD, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -843,13 +948,19 @@ int imu_v2_get_angular_velocity(IMUV2 *imu_v2, int16_t *ret_x, int16_t *ret_y, i
 	GetAngularVelocity_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_ANGULAR_VELOCITY, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -868,13 +979,19 @@ int imu_v2_get_temperature(IMUV2 *imu_v2, int8_t *ret_temperature) {
 	GetTemperature_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_TEMPERATURE, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -891,13 +1008,19 @@ int imu_v2_get_orientation(IMUV2 *imu_v2, int16_t *ret_heading, int16_t *ret_rol
 	GetOrientation_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_ORIENTATION, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -916,13 +1039,19 @@ int imu_v2_get_linear_acceleration(IMUV2 *imu_v2, int16_t *ret_x, int16_t *ret_y
 	GetLinearAcceleration_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_LINEAR_ACCELERATION, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -941,13 +1070,19 @@ int imu_v2_get_gravity_vector(IMUV2 *imu_v2, int16_t *ret_x, int16_t *ret_y, int
 	GetGravityVector_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_GRAVITY_VECTOR, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -966,13 +1101,19 @@ int imu_v2_get_quaternion(IMUV2 *imu_v2, int16_t *ret_w, int16_t *ret_x, int16_t
 	GetQuaternion_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_QUATERNION, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -993,13 +1134,19 @@ int imu_v2_get_all_data(IMUV2 *imu_v2, int16_t ret_acceleration[3], int16_t ret_
 	int ret;
 	int i;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_ALL_DATA, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1023,13 +1170,19 @@ int imu_v2_leds_on(IMUV2 *imu_v2) {
 	LedsOn_Request request;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_LEDS_ON, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, NULL);
+	ret = device_send_request(device_p, (Packet *)&request, NULL, 0);
 
 	return ret;
 }
@@ -1039,13 +1192,19 @@ int imu_v2_leds_off(IMUV2 *imu_v2) {
 	LedsOff_Request request;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_LEDS_OFF, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, NULL);
+	ret = device_send_request(device_p, (Packet *)&request, NULL, 0);
 
 	return ret;
 }
@@ -1056,13 +1215,19 @@ int imu_v2_are_leds_on(IMUV2 *imu_v2, bool *ret_leds) {
 	AreLedsOn_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_ARE_LEDS_ON, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1079,13 +1244,19 @@ int imu_v2_save_calibration(IMUV2 *imu_v2, bool *ret_calibration_done) {
 	SaveCalibration_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_SAVE_CALIBRATION, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1101,6 +1272,12 @@ int imu_v2_set_acceleration_period(IMUV2 *imu_v2, uint32_t period) {
 	SetAccelerationPeriod_Request request;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_SET_ACCELERATION_PERIOD, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
@@ -1109,7 +1286,7 @@ int imu_v2_set_acceleration_period(IMUV2 *imu_v2, uint32_t period) {
 
 	request.period = leconvert_uint32_to(period);
 
-	ret = device_send_request(device_p, (Packet *)&request, NULL);
+	ret = device_send_request(device_p, (Packet *)&request, NULL, 0);
 
 	return ret;
 }
@@ -1120,13 +1297,19 @@ int imu_v2_get_acceleration_period(IMUV2 *imu_v2, uint32_t *ret_period) {
 	GetAccelerationPeriod_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_ACCELERATION_PERIOD, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1142,6 +1325,12 @@ int imu_v2_set_magnetic_field_period(IMUV2 *imu_v2, uint32_t period) {
 	SetMagneticFieldPeriod_Request request;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_SET_MAGNETIC_FIELD_PERIOD, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
@@ -1150,7 +1339,7 @@ int imu_v2_set_magnetic_field_period(IMUV2 *imu_v2, uint32_t period) {
 
 	request.period = leconvert_uint32_to(period);
 
-	ret = device_send_request(device_p, (Packet *)&request, NULL);
+	ret = device_send_request(device_p, (Packet *)&request, NULL, 0);
 
 	return ret;
 }
@@ -1161,13 +1350,19 @@ int imu_v2_get_magnetic_field_period(IMUV2 *imu_v2, uint32_t *ret_period) {
 	GetMagneticFieldPeriod_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_MAGNETIC_FIELD_PERIOD, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1183,6 +1378,12 @@ int imu_v2_set_angular_velocity_period(IMUV2 *imu_v2, uint32_t period) {
 	SetAngularVelocityPeriod_Request request;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_SET_ANGULAR_VELOCITY_PERIOD, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
@@ -1191,7 +1392,7 @@ int imu_v2_set_angular_velocity_period(IMUV2 *imu_v2, uint32_t period) {
 
 	request.period = leconvert_uint32_to(period);
 
-	ret = device_send_request(device_p, (Packet *)&request, NULL);
+	ret = device_send_request(device_p, (Packet *)&request, NULL, 0);
 
 	return ret;
 }
@@ -1202,13 +1403,19 @@ int imu_v2_get_angular_velocity_period(IMUV2 *imu_v2, uint32_t *ret_period) {
 	GetAngularVelocityPeriod_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_ANGULAR_VELOCITY_PERIOD, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1224,6 +1431,12 @@ int imu_v2_set_temperature_period(IMUV2 *imu_v2, uint32_t period) {
 	SetTemperaturePeriod_Request request;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_SET_TEMPERATURE_PERIOD, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
@@ -1232,7 +1445,7 @@ int imu_v2_set_temperature_period(IMUV2 *imu_v2, uint32_t period) {
 
 	request.period = leconvert_uint32_to(period);
 
-	ret = device_send_request(device_p, (Packet *)&request, NULL);
+	ret = device_send_request(device_p, (Packet *)&request, NULL, 0);
 
 	return ret;
 }
@@ -1243,13 +1456,19 @@ int imu_v2_get_temperature_period(IMUV2 *imu_v2, uint32_t *ret_period) {
 	GetTemperaturePeriod_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_TEMPERATURE_PERIOD, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1265,6 +1484,12 @@ int imu_v2_set_orientation_period(IMUV2 *imu_v2, uint32_t period) {
 	SetOrientationPeriod_Request request;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_SET_ORIENTATION_PERIOD, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
@@ -1273,7 +1498,7 @@ int imu_v2_set_orientation_period(IMUV2 *imu_v2, uint32_t period) {
 
 	request.period = leconvert_uint32_to(period);
 
-	ret = device_send_request(device_p, (Packet *)&request, NULL);
+	ret = device_send_request(device_p, (Packet *)&request, NULL, 0);
 
 	return ret;
 }
@@ -1284,13 +1509,19 @@ int imu_v2_get_orientation_period(IMUV2 *imu_v2, uint32_t *ret_period) {
 	GetOrientationPeriod_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_ORIENTATION_PERIOD, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1306,6 +1537,12 @@ int imu_v2_set_linear_acceleration_period(IMUV2 *imu_v2, uint32_t period) {
 	SetLinearAccelerationPeriod_Request request;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_SET_LINEAR_ACCELERATION_PERIOD, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
@@ -1314,7 +1551,7 @@ int imu_v2_set_linear_acceleration_period(IMUV2 *imu_v2, uint32_t period) {
 
 	request.period = leconvert_uint32_to(period);
 
-	ret = device_send_request(device_p, (Packet *)&request, NULL);
+	ret = device_send_request(device_p, (Packet *)&request, NULL, 0);
 
 	return ret;
 }
@@ -1325,13 +1562,19 @@ int imu_v2_get_linear_acceleration_period(IMUV2 *imu_v2, uint32_t *ret_period) {
 	GetLinearAccelerationPeriod_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_LINEAR_ACCELERATION_PERIOD, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1347,6 +1590,12 @@ int imu_v2_set_gravity_vector_period(IMUV2 *imu_v2, uint32_t period) {
 	SetGravityVectorPeriod_Request request;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_SET_GRAVITY_VECTOR_PERIOD, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
@@ -1355,7 +1604,7 @@ int imu_v2_set_gravity_vector_period(IMUV2 *imu_v2, uint32_t period) {
 
 	request.period = leconvert_uint32_to(period);
 
-	ret = device_send_request(device_p, (Packet *)&request, NULL);
+	ret = device_send_request(device_p, (Packet *)&request, NULL, 0);
 
 	return ret;
 }
@@ -1366,13 +1615,19 @@ int imu_v2_get_gravity_vector_period(IMUV2 *imu_v2, uint32_t *ret_period) {
 	GetGravityVectorPeriod_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_GRAVITY_VECTOR_PERIOD, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1388,6 +1643,12 @@ int imu_v2_set_quaternion_period(IMUV2 *imu_v2, uint32_t period) {
 	SetQuaternionPeriod_Request request;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_SET_QUATERNION_PERIOD, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
@@ -1396,7 +1657,7 @@ int imu_v2_set_quaternion_period(IMUV2 *imu_v2, uint32_t period) {
 
 	request.period = leconvert_uint32_to(period);
 
-	ret = device_send_request(device_p, (Packet *)&request, NULL);
+	ret = device_send_request(device_p, (Packet *)&request, NULL, 0);
 
 	return ret;
 }
@@ -1407,13 +1668,19 @@ int imu_v2_get_quaternion_period(IMUV2 *imu_v2, uint32_t *ret_period) {
 	GetQuaternionPeriod_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_QUATERNION_PERIOD, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1429,6 +1696,12 @@ int imu_v2_set_all_data_period(IMUV2 *imu_v2, uint32_t period) {
 	SetAllDataPeriod_Request request;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_SET_ALL_DATA_PERIOD, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
@@ -1437,7 +1710,7 @@ int imu_v2_set_all_data_period(IMUV2 *imu_v2, uint32_t period) {
 
 	request.period = leconvert_uint32_to(period);
 
-	ret = device_send_request(device_p, (Packet *)&request, NULL);
+	ret = device_send_request(device_p, (Packet *)&request, NULL, 0);
 
 	return ret;
 }
@@ -1448,13 +1721,19 @@ int imu_v2_get_all_data_period(IMUV2 *imu_v2, uint32_t *ret_period) {
 	GetAllDataPeriod_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_ALL_DATA_PERIOD, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1470,6 +1749,12 @@ int imu_v2_set_sensor_configuration(IMUV2 *imu_v2, uint8_t magnetometer_rate, ui
 	SetSensorConfiguration_Request request;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_SET_SENSOR_CONFIGURATION, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
@@ -1482,7 +1767,7 @@ int imu_v2_set_sensor_configuration(IMUV2 *imu_v2, uint8_t magnetometer_rate, ui
 	request.accelerometer_range = accelerometer_range;
 	request.accelerometer_bandwidth = accelerometer_bandwidth;
 
-	ret = device_send_request(device_p, (Packet *)&request, NULL);
+	ret = device_send_request(device_p, (Packet *)&request, NULL, 0);
 
 	return ret;
 }
@@ -1493,13 +1778,19 @@ int imu_v2_get_sensor_configuration(IMUV2 *imu_v2, uint8_t *ret_magnetometer_rat
 	GetSensorConfiguration_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_SENSOR_CONFIGURATION, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1519,6 +1810,12 @@ int imu_v2_set_sensor_fusion_mode(IMUV2 *imu_v2, uint8_t mode) {
 	SetSensorFusionMode_Request request;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_SET_SENSOR_FUSION_MODE, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
@@ -1527,7 +1824,7 @@ int imu_v2_set_sensor_fusion_mode(IMUV2 *imu_v2, uint8_t mode) {
 
 	request.mode = mode;
 
-	ret = device_send_request(device_p, (Packet *)&request, NULL);
+	ret = device_send_request(device_p, (Packet *)&request, NULL, 0);
 
 	return ret;
 }
@@ -1538,13 +1835,19 @@ int imu_v2_get_sensor_fusion_mode(IMUV2 *imu_v2, uint8_t *ret_mode) {
 	GetSensorFusionMode_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_SENSOR_FUSION_MODE, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1560,6 +1863,12 @@ int imu_v2_set_spitfp_baudrate_config(IMUV2 *imu_v2, bool enable_dynamic_baudrat
 	SetSPITFPBaudrateConfig_Request request;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_SET_SPITFP_BAUDRATE_CONFIG, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
@@ -1569,7 +1878,7 @@ int imu_v2_set_spitfp_baudrate_config(IMUV2 *imu_v2, bool enable_dynamic_baudrat
 	request.enable_dynamic_baudrate = enable_dynamic_baudrate ? 1 : 0;
 	request.minimum_dynamic_baudrate = leconvert_uint32_to(minimum_dynamic_baudrate);
 
-	ret = device_send_request(device_p, (Packet *)&request, NULL);
+	ret = device_send_request(device_p, (Packet *)&request, NULL, 0);
 
 	return ret;
 }
@@ -1580,13 +1889,19 @@ int imu_v2_get_spitfp_baudrate_config(IMUV2 *imu_v2, bool *ret_enable_dynamic_ba
 	GetSPITFPBaudrateConfig_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_SPITFP_BAUDRATE_CONFIG, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1604,6 +1919,12 @@ int imu_v2_get_send_timeout_count(IMUV2 *imu_v2, uint8_t communication_method, u
 	GetSendTimeoutCount_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_SEND_TIMEOUT_COUNT, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
@@ -1612,7 +1933,7 @@ int imu_v2_get_send_timeout_count(IMUV2 *imu_v2, uint8_t communication_method, u
 
 	request.communication_method = communication_method;
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1628,6 +1949,12 @@ int imu_v2_set_spitfp_baudrate(IMUV2 *imu_v2, char bricklet_port, uint32_t baudr
 	SetSPITFPBaudrate_Request request;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_SET_SPITFP_BAUDRATE, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
@@ -1637,7 +1964,7 @@ int imu_v2_set_spitfp_baudrate(IMUV2 *imu_v2, char bricklet_port, uint32_t baudr
 	request.bricklet_port = bricklet_port;
 	request.baudrate = leconvert_uint32_to(baudrate);
 
-	ret = device_send_request(device_p, (Packet *)&request, NULL);
+	ret = device_send_request(device_p, (Packet *)&request, NULL, 0);
 
 	return ret;
 }
@@ -1648,6 +1975,12 @@ int imu_v2_get_spitfp_baudrate(IMUV2 *imu_v2, char bricklet_port, uint32_t *ret_
 	GetSPITFPBaudrate_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_SPITFP_BAUDRATE, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
@@ -1656,7 +1989,7 @@ int imu_v2_get_spitfp_baudrate(IMUV2 *imu_v2, char bricklet_port, uint32_t *ret_
 
 	request.bricklet_port = bricklet_port;
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1673,6 +2006,12 @@ int imu_v2_get_spitfp_error_count(IMUV2 *imu_v2, char bricklet_port, uint32_t *r
 	GetSPITFPErrorCount_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_SPITFP_ERROR_COUNT, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
@@ -1681,7 +2020,7 @@ int imu_v2_get_spitfp_error_count(IMUV2 *imu_v2, char bricklet_port, uint32_t *r
 
 	request.bricklet_port = bricklet_port;
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1700,13 +2039,19 @@ int imu_v2_enable_status_led(IMUV2 *imu_v2) {
 	EnableStatusLED_Request request;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_ENABLE_STATUS_LED, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, NULL);
+	ret = device_send_request(device_p, (Packet *)&request, NULL, 0);
 
 	return ret;
 }
@@ -1716,13 +2061,19 @@ int imu_v2_disable_status_led(IMUV2 *imu_v2) {
 	DisableStatusLED_Request request;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_DISABLE_STATUS_LED, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, NULL);
+	ret = device_send_request(device_p, (Packet *)&request, NULL, 0);
 
 	return ret;
 }
@@ -1733,13 +2084,19 @@ int imu_v2_is_status_led_enabled(IMUV2 *imu_v2, bool *ret_enabled) {
 	IsStatusLEDEnabled_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_IS_STATUS_LED_ENABLED, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1756,6 +2113,12 @@ int imu_v2_get_protocol1_bricklet_name(IMUV2 *imu_v2, char port, uint8_t *ret_pr
 	GetProtocol1BrickletName_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_PROTOCOL1_BRICKLET_NAME, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
@@ -1764,7 +2127,7 @@ int imu_v2_get_protocol1_bricklet_name(IMUV2 *imu_v2, char port, uint8_t *ret_pr
 
 	request.port = port;
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1783,13 +2146,19 @@ int imu_v2_get_chip_temperature(IMUV2 *imu_v2, int16_t *ret_temperature) {
 	GetChipTemperature_Response response;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_GET_CHIP_TEMPERATURE, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;
@@ -1805,13 +2174,77 @@ int imu_v2_reset(IMUV2 *imu_v2) {
 	Reset_Request request;
 	int ret;
 
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_RESET, device_p->ipcon_p, device_p);
 
 	if (ret < 0) {
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, NULL);
+	ret = device_send_request(device_p, (Packet *)&request, NULL, 0);
+
+	return ret;
+}
+
+int imu_v2_write_bricklet_plugin(IMUV2 *imu_v2, char port, uint8_t offset, uint8_t chunk[32]) {
+	DevicePrivate *device_p = imu_v2->p;
+	WriteBrickletPlugin_Request request;
+	int ret;
+
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
+	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_WRITE_BRICKLET_PLUGIN, device_p->ipcon_p, device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
+	request.port = port;
+	request.offset = offset;
+	memcpy(request.chunk, chunk, 32 * sizeof(uint8_t));
+
+	ret = device_send_request(device_p, (Packet *)&request, NULL, 0);
+
+	return ret;
+}
+
+int imu_v2_read_bricklet_plugin(IMUV2 *imu_v2, char port, uint8_t offset, uint8_t ret_chunk[32]) {
+	DevicePrivate *device_p = imu_v2->p;
+	ReadBrickletPlugin_Request request;
+	ReadBrickletPlugin_Response response;
+	int ret;
+
+	ret = device_check_validity(device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
+	ret = packet_header_create(&request.header, sizeof(request), IMU_V2_FUNCTION_READ_BRICKLET_PLUGIN, device_p->ipcon_p, device_p);
+
+	if (ret < 0) {
+		return ret;
+	}
+
+	request.port = port;
+	request.offset = offset;
+
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
+
+	if (ret < 0) {
+		return ret;
+	}
+
+	memcpy(ret_chunk, response.chunk, 32 * sizeof(uint8_t));
 
 	return ret;
 }
@@ -1828,7 +2261,7 @@ int imu_v2_get_identity(IMUV2 *imu_v2, char ret_uid[8], char ret_connected_uid[8
 		return ret;
 	}
 
-	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response);
+	ret = device_send_request(device_p, (Packet *)&request, (Packet *)&response, sizeof(response));
 
 	if (ret < 0) {
 		return ret;

@@ -1,33 +1,18 @@
 #include "imu_calls.hpp"
 
-#define HOST "localhost"
-#define PORT 4223
 #define UID "64tUkb" // Change XXYYZZ to the UID of your IMU Brick 2.0
 
 
-Imu::Imu()
+Imu::Imu(IPCon& pIPCon)
+:_ipcon(pIPCon)
 {
-    // Create IP connection
-    ipcon_create( &_ipcon );
-
     // Create device object
-    imu_v2_create( &_imu, UID, &_ipcon );
+    imu_v2_create( &_imu, UID, &_ipcon.getIPCon() );
 }
 
 Imu::~Imu()
 {
     imu_v2_destroy( &_imu );
-    ipcon_destroy( &_ipcon ); // Calls ipcon_disconnect internally
-}
-
-bool Imu::init( )
-{
-    // Connect to brickd
-    if( ipcon_connect( &_ipcon, HOST, PORT ) < 0 )
-    {
-        return false;
-    }
-    return true;
 }
 
 bool Imu::get_quaternion( quat_t& v )
