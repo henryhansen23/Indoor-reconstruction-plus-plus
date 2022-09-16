@@ -24,5 +24,7 @@ public:
     
     bool has_gps();
     bool get_coordinates( vec2_t& v );
+
+    bool get_time( struct timeval& tv );
 };
 

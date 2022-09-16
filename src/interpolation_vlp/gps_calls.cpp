@@ -1,3 +1,4 @@
+#include <ctime>
 #include "gps_calls.hpp"
 
 #define UID "DPS" // Change XXYYZZ to the UID of your GPS Brick 2.0
@@ -42,3 +43,54 @@ bool Gps::get_coordinates( vec2_t& v )
     }
     return false;
 }
+
+bool Gps::get_time( struct timeval& tv )
+{
+    uint32_t d; // date in binary coded decimal, ddmmyy
+    uint32_t t; // time of day in binary coded decimal, hhmmssmmm
+    uint32_t subtime;
+
+    int ret = int gps_v2_get_date_time( &_gps, &d, &t);
+    if( ret != E_OK ) return false;
+
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
+
+    std::tm splittime;
+    splittime.tm_wday  = 0;
+    splittime.tm_yday  = 0;
+    splittime.tm_isdst = 0;
+
+    subtime = d / 10000.0;
+    splittime.tm_mday = subtime;
+    d - subtime;
+
+    subtime = d / 100.0;
+    splittime.tm_mon = subtime;
+    d - subtime;
+
+    subtime = d + 100;
+    splittime.tm_year = subtime;
+
+    subtime = t / 10000000.0;
+    splittime.tm_hour = subtime;
+    t -= subtime;
+
+    subtime = t / 100000.0;
+    splittime.tm_min = subtime;
+    t -= subtime;
+
+    // seconds
+    subtime = t / 1000.0;
+    splittime.tm_sec = subtime;
+    t -= subtime;
+
+    tv.tv_sec = mktime( &splittime );
+
+    // millisecondseconds
+    subtime = t * 1000.0;
+    tv.tv_usec += subtime;
+
+    return true;
+}
+
