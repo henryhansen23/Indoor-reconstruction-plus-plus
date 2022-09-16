@@ -8,6 +8,8 @@
 // Eigen3
 #include <eigen3/Eigen/Geometry>
 
+typedef Eigen::Vector2f vec2_t;
+
 /*
  * The Gps class hides the Tinkerforge GPS 2.0. If other GPSs
  * are supported later, this can probably be subclassed.
@@ -19,5 +21,8 @@ class Gps
 public:
     Gps(IPCon& pIPCon);
     ~Gps();
+    
+    bool has_gps();
+    bool get_coordinates( vec2_t& v );
 };
 

@@ -28,6 +28,9 @@ void parseargs( int argc, char** argv, Parameters& params )
             ( "end,e",
               value<float>(&params.fov_end)->default_value( 359.0f ),
               "Specify field of view end degree [0-359]" )
+            ( "wait-gps",
+              bool_switch(&params.wait_gps)->default_value( false ),
+              "Specify if the scanner should wait for GPS fix" )
             ( "correction,c",
               bool_switch(&params.apply_correction)->default_value( false ),
               "Apply vertical correction" )

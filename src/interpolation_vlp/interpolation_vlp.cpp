@@ -6,6 +6,12 @@
 #include <ifaddrs.h> // for getifaddrs
 #include <netinet/in.h> // for sockaddr_in
 
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
+
 // VelodyneCapture
 #include "VelodyneCapture.h"
 
@@ -92,6 +98,13 @@ int main( int argc, char **argv )
 
     Imu imu(ipcon);
     Gps gps(ipcon);
+    
+    if (params.wait_gps) {
+        while (!gps.has_gps()) {
+            std::cout << "Waiting for GPS fix\n";
+            sleep(1);
+        }
+    }
 
 // -------------------------------------------------
 
@@ -124,6 +137,13 @@ int main( int argc, char **argv )
     imu_data.open(path + "/imu/imu_data.csv");
     imu_data << "angv_x,angv_y,angv_z,lina_x,lina_y,lina_z\n";
     imu_data.close();
+
+    // Open and write header to location csv file
+    boost::filesystem::create_directories(path + "/location");
+    std::ofstream location;
+    location.open(path + "/location/location_datapacket.csv");
+    location << "time,lon,lat\n";
+    location.close();
 
 
     // Initialize some loop variables

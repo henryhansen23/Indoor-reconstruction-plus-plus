@@ -10,6 +10,7 @@ struct Parameters
     int         fragment_number;
     float       fov_start;
     float       fov_end;
+    bool        wait_gps;
     bool        apply_correction;
 
     inline void setOdometry( int v )
