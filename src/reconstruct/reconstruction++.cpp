@@ -39,15 +39,24 @@ main(int argc, char **argv)
     std::cout << std::endl << "Fragments" << std::endl << std::endl;
     int fragments = number_of_directories(data_dir + "/fragments");
 
-    for (int i = 0; i < fragments; ++i) {
-        std::cout << i << std::endl;
-        std::string fragment = "fragment_" + std::to_string(i);
+    for( boost::filesystem::directory_iterator itr( data_dir + "/fragments" ); itr!=boost::filesystem::directory_iterator(); ++itr )
+    {
+        std::cout << itr->path().filename() << ' '; // display filename only
+        if (boost::filesystem::is_regular_file(itr->status())) std::cout << " [" << boost::filesystem::file_size(itr->path()) << ']';
+        std::cout << std::endl;
+    // }
+
+    // for (int i = 0; i < fragments; ++i) {
+        // std::cout << i << std::endl;
+        // std::string fragment = "fragment_" + std::to_string(i);
+
+        std::string fragment = itr->path().string();
 
         // Read quaternions
         std::cout << "Reading quaternions file..."<< std::flush;
         quart_vector_t quaternions_time;
         read_quaternions_file( quaternions_time,
-                               data_dir + "/fragments/" + fragment + "/quaternions" );
+                               fragment + "/quaternions" );
         std::cout << "Done." << std::endl;
 
         // Interpolate quaternions
@@ -59,14 +68,14 @@ main(int argc, char **argv)
         // Load datapackets
         std::cout << "Loading datapackets..."<< std::endl;
         std::vector<std::vector<point_cloud_w_labels> >
-            datapackets_clouds = load_datapackets(data_dir + "/fragments/" + fragment + "/datapackets");
+            datapackets_clouds = load_datapackets(fragment + "/datapackets");
         std::cout << "Done." << std::endl;
 
         // Combine datapackets to fragment
         std::cout << "Combining datapackets to fragment..."<< std::flush;
         combine_datapackets_to_fragment(datapackets_clouds,
                                         interpolated_quaternions,
-                                        data_dir + "/fragments/" + fragment);
+                                        fragment);
         std::cout << "Done." << std::endl;
     }
 

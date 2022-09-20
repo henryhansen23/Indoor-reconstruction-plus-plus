@@ -116,8 +116,11 @@ int main( int argc, char **argv )
     }
     else
     {
-        path = params.directory + "/fragments/fragment_" + std::to_string(params.fragment_number) + "/";
-        std::cout << "Writing to: fragment_" << params.fragment_number << "\n\n";
+        std::time_t now = std::time(nullptr);
+        std::ostringstream fragname;
+        fragname << params.directory << "/fragments/fragment_" << std::put_time(std::localtime(&now), "%F-%T");
+        path = fragname.str() + "/";
+        std::cout << "Writing to: " << fragname.str() << std::endl << std::endl;
     }
 
     // Create directories in path
@@ -139,10 +142,19 @@ int main( int argc, char **argv )
     imu_data.close();
 
     // Open and write header to location csv file
+    // Get GPS
+    vec2_t coordinates;
+    bool   coordinatesSet = false;
+    coordinatesSet = gps.get_coordinates(coordinates);
     boost::filesystem::create_directories(path + "/location");
     std::ofstream location;
     location.open(path + "/location/location_datapacket.csv");
-    location << "time,lon,lat\n";
+    location << "lon,lat" << endl;
+    if (coordinatesSet) {
+        location << coordinates.x() << ","
+                 << coordinates.y() << ","
+                 << endl;
+    }
     location.close();
 
 
@@ -178,6 +190,7 @@ int main( int argc, char **argv )
 
     Eigen::Quaternion<float> startQuaternion;
     bool startQuaternionSet = false;
+    struct timeval tv;
 
     //--------------------
     // ---- Main loop ----
@@ -342,6 +355,8 @@ int main( int argc, char **argv )
                        << endl;
             quaternion.close();
 
+            gps.get_time(tv);
+            
             vec3_t angv;
             if( imu.get_angular_velocity( angv ) == false )
             {

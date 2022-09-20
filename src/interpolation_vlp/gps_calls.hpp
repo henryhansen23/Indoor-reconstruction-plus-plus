@@ -18,6 +18,7 @@ class Gps
 {
     IPCon& _ipcon;
     GPSV2        _gps;
+    struct timeval _last_tv;
 public:
     Gps(IPCon& pIPCon);
     ~Gps();
@@ -26,5 +27,7 @@ public:
     bool get_coordinates( vec2_t& v );
 
     bool get_time( struct timeval& tv );
+
+    void set_time( const struct timeval& tv );
 };
 
