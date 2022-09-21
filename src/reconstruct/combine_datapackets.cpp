@@ -44,11 +44,11 @@ combine_datapackets_to_scans( std::vector<std::vector<pcl::PointCloud<pcl::Point
 {
     const std::vector<vec4d_vector_t>
         quaternions_scans = quaternions_scan_assignment(quaternions, datapacket_clouds);
-    std::vector<Eigen::Matrix4d, Eigen::aligned_allocator<Eigen::Matrix4d> > transformation_matrices;
     boost::filesystem::create_directory(path + "/scans");
-    for (std::size_t i = 0; i < datapacket_clouds.size(); ++i) {
+    for( std::size_t i = 0; i < datapacket_clouds.size(); ++i )
+    {
         // Make transformation matrices from quaternions
-        std::vector<Eigen::Matrix4d, Eigen::aligned_allocator<Eigen::Matrix4d> > transformation_matrices = make_transformation_matrices(quaternions_scans[i]);
+        mat4d_vector_t transformation_matrices = make_transformation_matrices(quaternions_scans[i]);
         pcl::PointCloud<pcl::PointXYZL>::Ptr datapackets_combined(new pcl::PointCloud<pcl::PointXYZL>);
         for (std::size_t j = 0; j < datapacket_clouds[i].size(); ++j) {
             pcl::transformPointCloud(datapacket_clouds[i][j], datapacket_clouds[i][j], transformation_matrices[j]);
@@ -58,7 +58,6 @@ combine_datapackets_to_scans( std::vector<std::vector<pcl::PointCloud<pcl::Point
         pcl::PointCloud<pcl::PointNormal>::Ptr scan(new pcl::PointCloud<pcl::PointNormal>);
         pcl::copyPointCloud(*datapackets_combined, *scan);
         pcl::io::savePCDFileBinary(path + "/scans/scan_" + std::to_string(i) + ".pcd", *scan);
-        transformation_matrices.clear();
     }
 }
 
@@ -77,8 +76,9 @@ combine_datapackets_to_fragment( std::vector<std::vector<pcl::PointCloud<pcl::Po
     for (std::size_t i = 0; i < datapacket_clouds.size(); ++i)
     {
         // Make transformation matrices from quaternions
-        std::vector<Eigen::Matrix4d, Eigen::aligned_allocator<Eigen::Matrix4d> > transformation_matrices = make_transformation_matrices(quaternions_scans[i]);
-        for (std::size_t j = 0; j < datapacket_clouds[i].size(); ++j) {
+        mat4d_vector_t transformation_matrices = make_transformation_matrices(quaternions_scans[i]);
+        for( std::size_t j = 0; j < datapacket_clouds[i].size(); ++j )
+        {
             pcl::transformPointCloud(datapacket_clouds[i][j], datapacket_clouds[i][j], transformation_matrices[j]);
             *datapackets_combined += datapacket_clouds[i][j];
         }

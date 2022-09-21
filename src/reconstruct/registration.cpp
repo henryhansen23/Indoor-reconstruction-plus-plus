@@ -9,12 +9,6 @@
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/pcl_config.h>
 
-#if defined __GNUC__ || defined __APPLE__
-#include <Eigen/Dense>
-#else
-#include <eigen3/Eigen/Dense>
-#endif
-
 #include "registration.h"
 
 Registration::Registration(float sample_porportion,
@@ -52,9 +46,9 @@ Registration::normals_estimation(pcl::PointCloud<pcl::PointNormal>::Ptr cloud)
 
 ////////////////////////////////////////////////// Alignment Non-linear ICP //////////////////////////////////////////////////////
 void
-Registration::alignment_icp_nl(pcl::PointCloud<pcl::PointNormal>::Ptr target,
-                               pcl::PointCloud<pcl::PointNormal>::Ptr source,
-                               Eigen::Matrix4f &transformation)
+Registration::alignment_icp_nl( pcl::PointCloud<pcl::PointNormal>::Ptr target,
+                                pcl::PointCloud<pcl::PointNormal>::Ptr source,
+                                mat4f_t& transformation )
 {
     pcl::PointCloud<pcl::PointNormal>::Ptr icp_result(new pcl::PointCloud<pcl::PointNormal>);
     pcl::IterativeClosestPointNonLinear<pcl::PointNormal, pcl::PointNormal> icp;
@@ -74,9 +68,9 @@ Registration::alignment_icp_nl(pcl::PointCloud<pcl::PointNormal>::Ptr target,
 #if PCL_VERSION_COMPARE(>, 1, 10, 0)
 //////////////////////////// Alignment ICP with normals and symmetric objective ////////////////////////////////////////
 void
-Registration::alignment_icp_symmetric(pcl::PointCloud<pcl::PointNormal>::Ptr target,
-                               pcl::PointCloud<pcl::PointNormal>::Ptr source,
-                               Eigen::Matrix4f &transformation)
+Registration::alignment_icp_symmetric( pcl::PointCloud<pcl::PointNormal>::Ptr target,
+                                       pcl::PointCloud<pcl::PointNormal>::Ptr source,
+                                       mat4f_t& transformation )
 {
     pcl::PointCloud<pcl::PointNormal>::Ptr icp_result(new pcl::PointCloud<pcl::PointNormal>);
     pcl::IterativeClosestPointWithNormals<pcl::PointNormal, pcl::PointNormal> icp;
@@ -97,9 +91,9 @@ Registration::alignment_icp_symmetric(pcl::PointCloud<pcl::PointNormal>::Ptr tar
 
 //////////////////////////////////////////// Alignment Generalized ICP ///////////////////////////////////////////////
 void
-Registration::alignment_gicp(pcl::PointCloud<pcl::PointNormal>::Ptr target,
-                             pcl::PointCloud<pcl::PointNormal>::Ptr source,
-                             Eigen::Matrix4f &transformation)
+Registration::alignment_gicp( pcl::PointCloud<pcl::PointNormal>::Ptr target,
+                              pcl::PointCloud<pcl::PointNormal>::Ptr source,
+                              mat4f_t& transformation )
 {
     pcl::PointCloud<pcl::PointNormal>::Ptr icp_result(new pcl::PointCloud<pcl::PointNormal>);
     pcl::GeneralizedIterativeClosestPoint<pcl::PointNormal, pcl::PointNormal> icp;

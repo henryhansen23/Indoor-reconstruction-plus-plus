@@ -3,11 +3,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/pcl_config.h>
 
-#if defined __GNUC__ || defined __APPLE__
-#include <Eigen/Dense>
-#else
-#include <eigen3/Eigen/Dense>
-#endif
+#include "reco_types.h"
 
 class Registration
 {
@@ -42,21 +38,21 @@ public:
                         pcl::PointCloud<pcl::PointNormal>::Ptr output_cloud);
 
     void
-    alignment_icp_nl(const pcl::PointCloud<pcl::PointNormal>::Ptr target,
-                     const pcl::PointCloud<pcl::PointNormal>::Ptr source,
-                     Eigen::Matrix4f &transformation);
+    alignment_icp_nl( const pcl::PointCloud<pcl::PointNormal>::Ptr target,
+                      const pcl::PointCloud<pcl::PointNormal>::Ptr source,
+                      mat4f_t& transformation );
 
     #if PCL_VERSION_COMPARE(>, 1, 10, 0)
     void
-    alignment_icp_symmetric(const pcl::PointCloud<pcl::PointNormal>::Ptr target,
-                     const pcl::PointCloud<pcl::PointNormal>::Ptr source,
-                     Eigen::Matrix4f &transformation);
+    alignment_icp_symmetric( const pcl::PointCloud<pcl::PointNormal>::Ptr target,
+                             const pcl::PointCloud<pcl::PointNormal>::Ptr source,
+                             mat4f_t& transformation );
     #endif
 
     void
-    alignment_gicp(const pcl::PointCloud<pcl::PointNormal>::Ptr target,
-                   const pcl::PointCloud<pcl::PointNormal>::Ptr source,
-                   Eigen::Matrix4f &transformation);
+    alignment_gicp( const pcl::PointCloud<pcl::PointNormal>::Ptr target,
+                    const pcl::PointCloud<pcl::PointNormal>::Ptr source,
+                    mat4f_t& transformation );
 
     void
     visualize(pcl::PointCloud<pcl::PointNormal>::Ptr cloud_1, pcl::PointCloud<pcl::PointNormal>::Ptr cloud_2);

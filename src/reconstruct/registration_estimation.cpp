@@ -39,7 +39,8 @@ void translation_estimation( const std::string& data_path, vec3_t& translation )
 
     // Align all other point clouds pairwise
     int scans = number_of_scans(data_path);
-    for (int i = 1; i < scans; ++i) {
+    for (int i = 1; i < scans; ++i)
+    {
         std::string scan = "/scan_" + std::to_string(i);
 
         // Import new target cloud
@@ -54,7 +55,7 @@ void translation_estimation( const std::string& data_path, vec3_t& translation )
         reg.normal_space_sampling(source, source_sampled);
 
         // Align source and target
-        Eigen::Matrix4f transformation_matrix = Eigen::Matrix4f::Identity();
+        mat4f_t transformation_matrix = mat4f_t::Identity();
         reg.alignment_icp_nl(target_sampled, source_sampled, transformation_matrix);
 
         // Store translation
@@ -86,9 +87,10 @@ incremental_pairwise_registration(const std::vector<pcl::PointCloud<pcl::PointXY
     pcl::copyPointCloud(clouds[0], *source);
 
     // Align all other point clouds pairwise
-    for (std::size_t i = 1; i < clouds.size(); ++i) {
+    for (std::size_t i = 1; i < clouds.size(); ++i)
+    {
         // Initial alignment
-        Eigen::Matrix4f transformation_matrix = Eigen::Matrix4f::Identity();
+        mat4f_t transformation_matrix = mat4f_t::Identity();
         transformation_matrix.col(3).head<3>() = translations[i - 1];
         pcl::transformPointCloud(*source, *source, transformation_matrix);
 
