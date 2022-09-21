@@ -21,7 +21,7 @@ typedef std::pair<std::vector<Eigen::Vector4d,
                   std::vector<double> > quart_vector_t;
 
 typedef std::vector<Eigen::Vector4d,
-                    Eigen::aligned_allocator<Eigen::Vector4d> > vector4d_t;
+                    Eigen::aligned_allocator<Eigen::Vector4d> > vec4d_vector_t;
 
 std::ostream& operator<<( std::ostream& ostr, const quat_t& q );
 

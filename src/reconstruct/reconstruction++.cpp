@@ -57,7 +57,7 @@ main(int argc, char **argv)
 
         // Interpolate quaternions
         std::cout << "[frag] Interpolating quaternions ... "<< std::flush;
-        vector4d_t interpolated_quaternions;
+        vec4d_vector_t interpolated_quaternions;
         interpolate_quaternions( interpolated_quaternions, quaternions_time );
         std::cout << "done." << std::endl;
 
@@ -99,7 +99,7 @@ main(int argc, char **argv)
 
             // Interpolate quaternions
             std::cout << "Interpolating quaternions..."<< std::flush;
-            vector4d_t interpolated_quaternions;
+            vec4d_vector_t interpolated_quaternions;
             interpolate_quaternions( interpolated_quaternions, quaternions_time );
             std::cout << "Done." << std::endl;
 

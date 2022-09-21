@@ -12,11 +12,11 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void
-interpolate_quaternions( vector4d_t& interpolated_quaternions,
+interpolate_quaternions( vec4d_vector_t& interpolated_quaternions,
                          const quart_vector_t& quaternions_time )
 {
     quart_vector_t interpolated_quaternions_time;
-    vector4d_t equal_quaternions;
+    vec4d_vector_t equal_quaternions;
     std::vector<double> timestamp;
     Eigen::Vector4d previous_quaternion{1000, 1000, 1000, 1000};  // initialization of variable
     Eigen::Vector4d a, b, q, diff_quat;
