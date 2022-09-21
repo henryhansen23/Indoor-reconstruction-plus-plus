@@ -62,9 +62,9 @@ combine_datapackets_to_scans(std::vector<std::vector<pcl::PointCloud<pcl::PointX
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void
-combine_datapackets_to_fragment(std::vector<std::vector<pcl::PointCloud<pcl::PointXYZL> > > datapacket_clouds,
-                                const std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > &quaternions,
-                                const std::string path)
+combine_datapackets_to_fragment( std::vector<std::vector<pcl::PointCloud<pcl::PointXYZL> > > datapacket_clouds,
+                                 const std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > &quaternions,
+                                 const std::string path )
 {
     const std::vector<std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d>>>
         quaternions_scans = quaternions_scan_assignment(quaternions, datapacket_clouds);
@@ -80,7 +80,7 @@ combine_datapackets_to_fragment(std::vector<std::vector<pcl::PointCloud<pcl::Poi
         transformation_matrices.clear();
     }
     // Save fragment
-    pcl::io::savePCDFileBinary(path + "/fragment.pcd", *datapackets_combined);
+    pcl::io::savePCDFileBinary( path, *datapackets_combined );
 
     // Visualize fragment
     pcl::visualization::PCLVisualizer viz;

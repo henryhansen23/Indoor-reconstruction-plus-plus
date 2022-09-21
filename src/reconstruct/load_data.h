@@ -22,7 +22,7 @@ int
 number_of_directories(const std::string data_path);
 
 std::vector<pcl::PointCloud<pcl::PointXYZ> >
-load_fragments(const std::string fragments_path, const int fragments_number);
+load_fragments( const std::string& data_dir );
 
 std::vector<std::vector<pcl::PointCloud<pcl::PointXYZL> > >
 load_datapackets(const std::string path);

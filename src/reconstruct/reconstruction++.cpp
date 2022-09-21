@@ -33,22 +33,18 @@ main(int argc, char **argv)
     CmdLine cmdline(argc, argv);
     const std::string &data_dir = cmdline.getDataDir(); // argv[1];
     bool visualization = cmdline.getVisualize(); // false;
-    // if (argc > 2) {std::string arg = argv[2]; if (arg == "v") {visualization = true;}}
 
     //////////////////////////////////// Fragments ///////////////////////////////////////////////////
     std::cout << std::endl << "Fragments" << std::endl << std::endl;
     int fragments = number_of_directories(data_dir + "/fragments");
+
+    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > translations;
 
     for( boost::filesystem::directory_iterator itr( data_dir + "/fragments" ); itr!=boost::filesystem::directory_iterator(); ++itr )
     {
         std::cout << itr->path().filename() << ' '; // display filename only
         if (boost::filesystem::is_regular_file(itr->status())) std::cout << " [" << boost::filesystem::file_size(itr->path()) << ']';
         std::cout << std::endl;
-    // }
-
-    // for (int i = 0; i < fragments; ++i) {
-        // std::cout << i << std::endl;
-        // std::string fragment = "fragment_" + std::to_string(i);
 
         std::string fragment = itr->path().string();
 
@@ -73,10 +69,14 @@ main(int argc, char **argv)
 
         // Combine datapackets to fragment
         std::cout << "Combining datapackets to fragment..."<< std::flush;
-        combine_datapackets_to_fragment(datapackets_clouds,
-                                        interpolated_quaternions,
-                                        fragment);
+        combine_datapackets_to_fragment( datapackets_clouds,
+                                         interpolated_quaternions,
+                                         fragment + "/fragment.pcd" );
         std::cout << "Done." << std::endl;
+
+
+        Eigen::Vector3f translation{0, 0, 0};
+        translations.push_back(translation);
     }
 
     std::cout << std::endl << std::endl;
@@ -85,7 +85,6 @@ main(int argc, char **argv)
     if (boost::filesystem::exists(data_dir + "/odometry")) {
         std::cout << "Odometry" << std::endl << std::endl;
         int odometries = number_of_directories(data_dir + "/odometry");
-        std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > translations;
         for (int i = 0; i < odometries; ++i) {
             std::cout << i << std::endl;
             std::string odometry = "odometry_" + std::to_string(i);
@@ -127,13 +126,30 @@ main(int argc, char **argv)
 
         /////////////////////////// Fragment pairwise registration with odometry ////////////////////////////////////////////////////////
         std::cout << "Fragment pairwise registration" << std::endl << std::endl;
-        std::vector<point_cloud> fragment_clouds = load_fragments(data_dir + "/fragments", fragments);
+        std::vector<point_cloud> fragment_clouds = load_fragments( data_dir );
         incremental_pairwise_registration(fragment_clouds,
                                           translations,
-                                          data_dir,
+                                          data_dir + "/combined_cloud.pcd",
                                           cmdline.getICPType(),
                                           visualization);
     }
+#if 0
+    /*
+     * Merging point clouds from several independent scans does not work.
+     * It crashes eventually. Fix before re-enabling.
+     */
+    else
+    {
+        std::cout << "Fragment pairwise registration" << std::endl << std::endl;
+        std::vector<point_cloud> fragment_clouds = load_fragments( data_dir );
+        incremental_pairwise_registration(fragment_clouds,
+                                          translations,
+                                          data_dir + "/combined_cloud.pcd",
+                                          cmdline.getICPType(),
+                                          visualization);
+    }
+#endif
     //////////////////////////////////////////// END ////////////////////////////////////////////////////////////////////////
     return 0;
 }
+

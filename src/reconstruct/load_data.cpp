@@ -56,13 +56,19 @@ number_of_directories(const std::string data_path)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::vector<pcl::PointCloud<pcl::PointXYZ> >
-load_fragments(const std::string fragments_path, const int fragments_number)
+load_fragments( const std::string& data_dir )
 {
     // Read clouds
     std::vector<pcl::PointCloud<pcl::PointXYZ> > clouds;
-    for (int i = 0; i < fragments_number; ++i) {
+
+    for( boost::filesystem::directory_iterator itr( data_dir + "/fragments" );
+         itr!=boost::filesystem::directory_iterator();
+         ++itr )
+    {
+        const std::string fragments_path = itr->path().string();
+
         pcl::PointCloud<pcl::PointXYZ> cloud;
-        pcl::io::loadPCDFile<pcl::PointXYZ>(fragments_path + "/fragment_" + std::to_string(i) + "/fragment.pcd", cloud);
+        pcl::io::loadPCDFile<pcl::PointXYZ>( fragments_path + "/fragment.pcd", cloud );
         clouds.push_back(cloud);
     }
     return clouds;

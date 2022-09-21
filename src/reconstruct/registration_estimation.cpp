@@ -71,7 +71,7 @@ translation_estimation(const std::string data_path, Eigen::Vector3f &translation
 void
 incremental_pairwise_registration(const std::vector<pcl::PointCloud<pcl::PointXYZ> > &clouds,
                                   const std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > &translations,
-                                  const std::string &data_dir,
+                                  const std::string &combined_file,
                                   const std::string &icp_type,
                                   const bool visualization)
 {
@@ -136,7 +136,7 @@ incremental_pairwise_registration(const std::vector<pcl::PointCloud<pcl::PointXY
         }
     }
 
-    pcl::io::savePCDFileBinary(data_dir + "/combined_cloud.pcd", *source);
+    pcl::io::savePCDFileBinary( combined_file, *source);
 
     // Visualize all clouds combined
     reg.visualize(source, nullptr);
