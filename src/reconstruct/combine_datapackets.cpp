@@ -38,7 +38,7 @@ quaternions_scan_assignment(const std::vector<Eigen::Vector4d, Eigen::aligned_al
 void
 combine_datapackets_to_scans(std::vector<std::vector<pcl::PointCloud<pcl::PointXYZL> > > datapacket_clouds,
                              const std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > &quaternions,
-                             const std::string path)
+                             const std::string& path)
 {
     const std::vector<std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > >
         quaternions_scans = quaternions_scan_assignment(quaternions, datapacket_clouds);
@@ -64,7 +64,8 @@ combine_datapackets_to_scans(std::vector<std::vector<pcl::PointCloud<pcl::PointX
 void
 combine_datapackets_to_fragment( std::vector<std::vector<pcl::PointCloud<pcl::PointXYZL> > > datapacket_clouds,
                                  const std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > &quaternions,
-                                 const std::string path )
+                                 const std::string& path,
+                                 bool show )
 {
     const std::vector<std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d>>>
         quaternions_scans = quaternions_scan_assignment(quaternions, datapacket_clouds);
@@ -82,15 +83,22 @@ combine_datapackets_to_fragment( std::vector<std::vector<pcl::PointCloud<pcl::Po
     // Save fragment
     pcl::io::savePCDFileBinary( path, *datapackets_combined );
 
-    // Visualize fragment
-    pcl::visualization::PCLVisualizer viz;
-    viz.setBackgroundColor(255, 255, 255);
-    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZL> cloud_color(datapackets_combined, 0, 255, 0);
-    viz.addPointCloud<pcl::PointXYZL>(datapackets_combined, cloud_color, "cloud 1");
-    viz.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 0.5, "cloud 1");
-    while (!viz.wasStopped ())
+    if( show )
     {
-        viz.spinOnce ();
+        // Visualize fragment
+        pcl::visualization::PCLVisualizer viz;
+        viz.setBackgroundColor( 255, 255, 255 );
+        pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZL> cloud_color( datapackets_combined, 0, 255, 0 );
+        viz.addPointCloud<pcl::PointXYZL>( datapackets_combined,
+                                           cloud_color,
+                                           "cloud 1" );
+        viz.setPointCloudRenderingProperties( pcl::visualization::PCL_VISUALIZER_POINT_SIZE,
+                                              0.5,
+                                              "cloud 1" );
+        while( !viz.wasStopped() )
+        {
+            viz.spinOnce();
+        }
     }
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

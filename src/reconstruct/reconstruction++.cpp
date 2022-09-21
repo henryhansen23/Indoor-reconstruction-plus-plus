@@ -49,30 +49,31 @@ main(int argc, char **argv)
         std::string fragment = itr->path().string();
 
         // Read quaternions
-        std::cout << "Reading quaternions file..."<< std::flush;
+        std::cout << "[frag] Reading quaternions file ... "<< std::flush;
         quart_vector_t quaternions_time;
         read_quaternions_file( quaternions_time,
                                fragment + "/quaternions" );
-        std::cout << "Done." << std::endl;
+        std::cout << "done." << std::endl;
 
         // Interpolate quaternions
-        std::cout << "Interpolating quaternions..."<< std::flush;
+        std::cout << "[frag] Interpolating quaternions ... "<< std::flush;
         vector4d_t interpolated_quaternions;
         interpolate_quaternions( interpolated_quaternions, quaternions_time );
-        std::cout << "Done." << std::endl;
+        std::cout << "done." << std::endl;
 
         // Load datapackets
-        std::cout << "Loading datapackets..."<< std::endl;
+        std::cout << "[frag] Loading datapackets ... "<< std::flush;
         std::vector<std::vector<point_cloud_w_labels> >
             datapackets_clouds = load_datapackets(fragment + "/datapackets");
-        std::cout << "Done." << std::endl;
+        std::cout << "done." << std::endl;
 
         // Combine datapackets to fragment
-        std::cout << "Combining datapackets to fragment..."<< std::flush;
+        std::cout << "[frag] Combining datapackets to fragment ... "<< std::flush;
         combine_datapackets_to_fragment( datapackets_clouds,
                                          interpolated_quaternions,
-                                         fragment + "/fragment.pcd" );
-        std::cout << "Done." << std::endl;
+                                         fragment + "/fragment.pcd",
+                                         cmdline.getVisualize() );
+        std::cout << "done." << std::endl;
 
 
         Eigen::Vector3f translation{0, 0, 0};
