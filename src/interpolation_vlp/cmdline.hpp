@@ -5,9 +5,8 @@
 struct Parameters
 {
     std::string directory;
-    bool        use_odometry;
+    bool        use_odometry{false};
     int         odometry_number;
-    int         fragment_number;
     float       fov_start;
     float       fov_end;
     bool        wait_gps;
@@ -17,12 +16,6 @@ struct Parameters
     {
         use_odometry    = true;
         odometry_number = v;
-    }
-
-    inline void setFragment( int v )
-    {
-        use_odometry    = false;
-        fragment_number = v;
     }
 };
 

@@ -19,9 +19,6 @@ void parseargs( int argc, char** argv, Parameters& params )
             ( "odometry,o",
               value<int>()->notifier( [&](int v) { params.setOdometry(v); } ),
               "Specify odometry number of this scan" )
-            ( "fragment,f",
-              value<int>()->notifier( [&](int v) { params.setFragment(v); } )->default_value( 0 ),
-              "Specify the fragment number of this scan" )
             ( "start,s",
               value<float>(&params.fov_start)->default_value( 0.0f ),
               "Specify field of view start degree [0-359]" )
@@ -54,8 +51,7 @@ void parseargs( int argc, char** argv, Parameters& params )
                       << all
                       << std::endl
                       << "-o : Use this if you move with the VLP-16 while recording\n"
-                      << "-f : Use this if you stand still and use the tripod sweep\n"
-                      << "     -o and -f are mutually exclusive.\n"
+                      << "     otherwise a vertical sweep on a tripod is assumed.\n"
                       << "--start and --end restrict the recording angle. That allows you to prevent\n"
                       << "                you from recording yourself.\n"
                       << "-d :  creates the base directory where the recorded PCD files are stored.\n"
