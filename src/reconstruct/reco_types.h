@@ -12,16 +12,15 @@
 #endif
 
 typedef Eigen::Vector3f          vec3_t;
+typedef Eigen::Vector3d          vec3d_t;
+typedef Eigen::Vector4d          vec4d_t;
 typedef Eigen::Quaternion<float> quat_t;
 
-typedef Eigen::Vector4d          vec4d_t;
+typedef std::vector<vec3_t,  Eigen::aligned_allocator<vec3_t > > vec3_vector_t;
+typedef std::vector<vec4d_t, Eigen::aligned_allocator<vec4d_t> > vec4d_vector_t;
 
-typedef std::pair<std::vector<Eigen::Vector4d, 
-                              Eigen::aligned_allocator<Eigen::Vector4d> >, 
+typedef std::pair<vec4d_vector_t,
                   std::vector<double> > quart_vector_t;
-
-typedef std::vector<Eigen::Vector4d,
-                    Eigen::aligned_allocator<Eigen::Vector4d> > vec4d_vector_t;
 
 std::ostream& operator<<( std::ostream& ostr, const quat_t& q );
 

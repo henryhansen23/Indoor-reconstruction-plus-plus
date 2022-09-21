@@ -38,7 +38,7 @@ main(int argc, char **argv)
     std::cout << std::endl << "Fragments" << std::endl << std::endl;
     int fragments = number_of_directories(data_dir + "/fragments");
 
-    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > translations;
+    vec3_vector_t translations;
 
     for( boost::filesystem::directory_iterator itr( data_dir + "/fragments" ); itr!=boost::filesystem::directory_iterator(); ++itr )
     {
@@ -76,7 +76,7 @@ main(int argc, char **argv)
         std::cout << "done." << std::endl;
 
 
-        Eigen::Vector3f translation{0, 0, 0};
+        vec3_t translation{0, 0, 0};
         translations.push_back(translation);
     }
 
@@ -118,7 +118,7 @@ main(int argc, char **argv)
 
             // Estimate translation
             std::cout << "Estimating translation..."<< std::flush;
-            Eigen::Vector3f translation{0, 0, 0};
+            vec3_t translation{0, 0, 0};
             translation_estimation(data_dir + "/odometry/" + odometry + "/scans", translation);
             translations.push_back(translation);
             std::cout << "Done." << std::endl;

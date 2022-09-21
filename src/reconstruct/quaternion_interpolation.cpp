@@ -18,8 +18,8 @@ interpolate_quaternions( vec4d_vector_t& interpolated_quaternions,
     quart_vector_t interpolated_quaternions_time;
     vec4d_vector_t equal_quaternions;
     std::vector<double> timestamp;
-    Eigen::Vector4d previous_quaternion{1000, 1000, 1000, 1000};  // initialization of variable
-    Eigen::Vector4d a, b, q, diff_quat;
+    vec4d_t previous_quaternion{1000, 1000, 1000, 1000};  // initialization of variable
+    vec4d_t a, b, q, diff_quat;
 
     double diff_time, previous_time = 0;
     for (std::size_t i = 0; i < quaternions_time.first.size(); ++i) {

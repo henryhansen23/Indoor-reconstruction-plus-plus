@@ -12,19 +12,21 @@
 #include "transformation.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::vector<std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d>>>
-quaternions_scan_assignment(const std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > &quaternions,
-                            std::vector<std::vector<pcl::PointCloud<pcl::PointXYZL> > > &datapacket_clouds)
+std::vector<vec4d_vector_t>
+quaternions_scan_assignment( const vec4d_vector_t& quaternions,
+                             std::vector<std::vector<pcl::PointCloud<pcl::PointXYZL> > > &datapacket_clouds )
 {
     int number, current_number = 0, last_number = 0;
-    std::vector<std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > > quaternions_scans;
-    std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > quaternions_data_packets;
+    std::vector<vec4d_vector_t> quaternions_scans;
+    vec4d_vector_t              quaternions_data_packets;
 
     // Assign the qauternions to the respective datapackets and scans
-    for (std::size_t i = 0; i < datapacket_clouds.size(); ++i) {
+    for (std::size_t i = 0; i < datapacket_clouds.size(); ++i)
+    {
         number = (int) datapacket_clouds[i].size();
         current_number += number;
-        for (int j = last_number; j < current_number; ++j) {
+        for (int j = last_number; j < current_number; ++j)
+        {
             quaternions_data_packets.push_back(quaternions[j]);
         }
         quaternions_scans.push_back(quaternions_data_packets);
@@ -36,11 +38,11 @@ quaternions_scan_assignment(const std::vector<Eigen::Vector4d, Eigen::aligned_al
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void
-combine_datapackets_to_scans(std::vector<std::vector<pcl::PointCloud<pcl::PointXYZL> > > datapacket_clouds,
-                             const std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > &quaternions,
-                             const std::string& path)
+combine_datapackets_to_scans( std::vector<std::vector<pcl::PointCloud<pcl::PointXYZL> > > datapacket_clouds,
+                             const vec4d_vector_t& quaternions,
+                             const std::string&    path )
 {
-    const std::vector<std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > >
+    const std::vector<vec4d_vector_t>
         quaternions_scans = quaternions_scan_assignment(quaternions, datapacket_clouds);
     std::vector<Eigen::Matrix4d, Eigen::aligned_allocator<Eigen::Matrix4d> > transformation_matrices;
     boost::filesystem::create_directory(path + "/scans");
@@ -63,22 +65,23 @@ combine_datapackets_to_scans(std::vector<std::vector<pcl::PointCloud<pcl::PointX
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void
 combine_datapackets_to_fragment( std::vector<std::vector<pcl::PointCloud<pcl::PointXYZL> > > datapacket_clouds,
-                                 const std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > &quaternions,
-                                 const std::string& path,
-                                 bool show )
+                                 const vec4d_vector_t& quaternions,
+                                 const std::string&    path,
+                                 bool                  show )
 {
-    const std::vector<std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d>>>
+    const std::vector<vec4d_vector_t>
         quaternions_scans = quaternions_scan_assignment(quaternions, datapacket_clouds);
+
     pcl::PointCloud<pcl::PointXYZL>::Ptr datapackets_combined(new pcl::PointCloud<pcl::PointXYZL>);
-    std::vector<Eigen::Matrix4d, Eigen::aligned_allocator<Eigen::Matrix4d> > transformation_matrices;
-    for (std::size_t i = 0; i < datapacket_clouds.size(); ++i) {
+
+    for (std::size_t i = 0; i < datapacket_clouds.size(); ++i)
+    {
         // Make transformation matrices from quaternions
         std::vector<Eigen::Matrix4d, Eigen::aligned_allocator<Eigen::Matrix4d> > transformation_matrices = make_transformation_matrices(quaternions_scans[i]);
         for (std::size_t j = 0; j < datapacket_clouds[i].size(); ++j) {
             pcl::transformPointCloud(datapacket_clouds[i][j], datapacket_clouds[i][j], transformation_matrices[j]);
             *datapackets_combined += datapacket_clouds[i][j];
         }
-        transformation_matrices.clear();
     }
     // Save fragment
     pcl::io::savePCDFileBinary( path, *datapackets_combined );
@@ -102,3 +105,4 @@ combine_datapackets_to_fragment( std::vector<std::vector<pcl::PointCloud<pcl::Po
     }
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+

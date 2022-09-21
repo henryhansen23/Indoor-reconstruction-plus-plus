@@ -22,8 +22,7 @@
 using namespace boost::filesystem;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void
-translation_estimation(const std::string data_path, Eigen::Vector3f &translation)
+void translation_estimation( const std::string& data_path, vec3_t& translation )
 {
     Registration reg(0.25, 1e-8, 0.01, 5, 0.1, 0.5, 10);
 
@@ -70,10 +69,10 @@ translation_estimation(const std::string data_path, Eigen::Vector3f &translation
 
 void
 incremental_pairwise_registration(const std::vector<pcl::PointCloud<pcl::PointXYZ> > &clouds,
-                                  const std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > &translations,
-                                  const std::string &combined_file,
-                                  const std::string &icp_type,
-                                  const bool visualization)
+                                  const vec3_vector_t& translations,
+                                  const std::string&   combined_file,
+                                  const std::string&   icp_type,
+                                  const bool           visualization)
 {
     Registration reg(0.25, 1e-8, 0.01, 5, 0.1, 1, 10);
 
